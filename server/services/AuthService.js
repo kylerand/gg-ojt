@@ -11,7 +11,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 class AuthService {
   constructor() {
-    this.usersPath = join(config.progressPath, '../users');
+    this.usersPath = config.usersPath;
   }
 
   async init() {
