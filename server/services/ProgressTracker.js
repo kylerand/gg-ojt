@@ -2,270 +2,530 @@ import { join } from 'path';
 import { config } from '../utils/config.js';
 import { readJSON, writeJSON, ensureDir, listFiles } from '../storage/fileStorage.js';
 import { existsSync } from 'fs';
+import { supabase, isSupabaseConfigured } from './supabase.js';
 
 class ProgressTracker {
   constructor() {
     this.progressPath = config.progressPath;
-  }
-
-  // Initialize progress tracking
-  async init() {
-    await ensureDir(this.progressPath);
-  }
-
-  // Create new trainee progress
-  async createProgress(traineeId, traineeName, cartType) {
-    const progress = {
-      traineeId,
-      traineeName,
-      cartType,
-      startedAt: new Date().toISOString(),
-      lastActivity: new Date().toISOString(),
-      completedModules: [],
-      currentModule: null,
-      currentStep: null,
-      moduleProgress: {},
-    };
-
-    await this.saveProgress(traineeId, progress);
-    return progress;
-  }
-
-  // Get trainee progress
-  async getProgress(traineeId) {
-    try {
-      const filePath = join(this.progressPath, `${traineeId}.json`);
-      if (!existsSync(filePath)) {
-        return null;
-      }
-      return await readJSON(filePath);
-    } catch (error) {
-      throw new Error(`Failed to load progress for ${traineeId}: ${error.message}`);
+    this.useSupabase = isSupabaseConfigured();
+    if (this.useSupabase) {
+      console.log('🔗 ProgressTracker using Supabase');
+    } else {
+      console.log('📁 ProgressTracker using file storage');
     }
   }
 
-  // Save trainee progress
-  async saveProgress(traineeId, progress) {
-    await this.init();
-    const filePath = join(this.progressPath, `${traineeId}.json`);
-    progress.lastActivity = new Date().toISOString();
-    await writeJSON(filePath, progress);
+  async init() {
+    if (!this.useSupabase) {
+      await ensureDir(this.progressPath);
+    }
   }
 
-  // Update step progress
+  // ============================================
+  // CREATE PROGRESS
+  // ============================================
+  async createProgress(traineeId, traineeName, cartType) {
+    if (this.useSupabase) {
+      // Create main progress record
+      const { data: progressData, error: progressError } = await supabase
+        .from('progress')
+        .insert({
+          trainee_id: traineeId,
+          trainee_name: traineeName,
+          cart_type: cartType,
+        })
+        .select()
+        .single();
+
+      if (progressError) throw new Error(progressError.message);
+      
+      return this.mapProgressFromDb(progressData, []);
+    } else {
+      const progress = {
+        traineeId,
+        traineeName,
+        cartType,
+        startedAt: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        completedModules: [],
+        currentModule: null,
+        currentStep: null,
+        moduleProgress: {},
+      };
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
+    }
+  }
+
+  // ============================================
+  // GET PROGRESS
+  // ============================================
+  async getProgress(traineeId) {
+    if (this.useSupabase) {
+      // Get main progress record
+      const { data: progressData, error: progressError } = await supabase
+        .from('progress')
+        .select('*')
+        .eq('trainee_id', traineeId)
+        .single();
+
+      if (progressError || !progressData) return null;
+
+      // Get module progress
+      const { data: moduleData } = await supabase
+        .from('module_progress')
+        .select('*')
+        .eq('trainee_id', traineeId);
+
+      // Get step progress
+      const { data: stepData } = await supabase
+        .from('step_progress')
+        .select('*')
+        .eq('trainee_id', traineeId);
+
+      return this.mapProgressFromDb(progressData, moduleData || [], stepData || []);
+    } else {
+      try {
+        const filePath = join(this.progressPath, `${traineeId}.json`);
+        if (!existsSync(filePath)) return null;
+        return await readJSON(filePath);
+      } catch (error) {
+        throw new Error(`Failed to load progress for ${traineeId}: ${error.message}`);
+      }
+    }
+  }
+
+  // ============================================
+  // SAVE PROGRESS
+  // ============================================
+  async saveProgress(traineeId, progress) {
+    if (this.useSupabase) {
+      // Update main progress
+      await supabase
+        .from('progress')
+        .update({
+          trainee_name: progress.traineeName,
+          cart_type: progress.cartType,
+          last_activity: new Date().toISOString(),
+        })
+        .eq('trainee_id', traineeId);
+
+      // Update module progress
+      for (const [moduleId, modProgress] of Object.entries(progress.moduleProgress || {})) {
+        await supabase
+          .from('module_progress')
+          .upsert({
+            trainee_id: traineeId,
+            module_id: moduleId,
+            status: modProgress.status || 'not-started',
+            current_step: modProgress.currentStep || 0,
+            started_at: modProgress.startedAt,
+            completed_at: modProgress.completedAt,
+          }, { onConflict: 'trainee_id,module_id' });
+      }
+    } else {
+      await this.init();
+      const filePath = join(this.progressPath, `${traineeId}.json`);
+      progress.lastActivity = new Date().toISOString();
+      await writeJSON(filePath, progress);
+    }
+  }
+
+  // ============================================
+  // UPDATE STEP PROGRESS
+  // ============================================
   async updateStepProgress(traineeId, moduleId, stepId, completed = true) {
     const progress = await this.getProgress(traineeId);
     if (!progress) {
       throw new Error(`Progress not found for trainee: ${traineeId}`);
     }
 
-    if (!progress.moduleProgress[moduleId]) {
-      progress.moduleProgress[moduleId] = {
-        status: 'in_progress',
-        startedAt: new Date().toISOString(),
-        completedSteps: [],
-        knowledgeCheckScore: null,
-        supervisorSignoff: false,
-      };
+    if (this.useSupabase) {
+      // Upsert module progress
+      await supabase
+        .from('module_progress')
+        .upsert({
+          trainee_id: traineeId,
+          module_id: moduleId,
+          status: 'in-progress',
+          started_at: new Date().toISOString(),
+        }, { onConflict: 'trainee_id,module_id' });
+
+      // Upsert step progress
+      if (completed) {
+        await supabase
+          .from('step_progress')
+          .upsert({
+            trainee_id: traineeId,
+            module_id: moduleId,
+            step_id: stepId,
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+          }, { onConflict: 'trainee_id,module_id,step_id' });
+      }
+
+      // Update last activity
+      await supabase
+        .from('progress')
+        .update({ last_activity: new Date().toISOString() })
+        .eq('trainee_id', traineeId);
+
+      return await this.getProgress(traineeId);
+    } else {
+      if (!progress.moduleProgress[moduleId]) {
+        progress.moduleProgress[moduleId] = {
+          status: 'in_progress',
+          startedAt: new Date().toISOString(),
+          completedSteps: [],
+          knowledgeCheckScore: null,
+          supervisorSignoff: false,
+        };
+      }
+
+      if (completed && !progress.moduleProgress[moduleId].completedSteps.includes(stepId)) {
+        progress.moduleProgress[moduleId].completedSteps.push(stepId);
+      }
+
+      progress.currentModule = moduleId;
+      progress.currentStep = stepId;
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
     }
-
-    if (completed && !progress.moduleProgress[moduleId].completedSteps.includes(stepId)) {
-      progress.moduleProgress[moduleId].completedSteps.push(stepId);
-    }
-
-    progress.currentModule = moduleId;
-    progress.currentStep = stepId;
-
-    await this.saveProgress(traineeId, progress);
-    return progress;
   }
 
-  // Complete a module
+  // ============================================
+  // COMPLETE MODULE
+  // ============================================
   async completeModule(traineeId, moduleId, knowledgeCheckScore) {
     const progress = await this.getProgress(traineeId);
     if (!progress) {
       throw new Error(`Progress not found for trainee: ${traineeId}`);
     }
 
-    if (!progress.moduleProgress[moduleId]) {
-      throw new Error(`Module ${moduleId} not started`);
+    if (this.useSupabase) {
+      await supabase
+        .from('module_progress')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+        })
+        .eq('trainee_id', traineeId)
+        .eq('module_id', moduleId);
+
+      // Record quiz attempt
+      if (knowledgeCheckScore !== null && knowledgeCheckScore !== undefined) {
+        await supabase
+          .from('quiz_attempts')
+          .insert({
+            trainee_id: traineeId,
+            module_id: moduleId,
+            score: knowledgeCheckScore,
+            total_questions: 100, // Assuming percentage
+            passed: knowledgeCheckScore >= 80,
+          });
+      }
+
+      return await this.getProgress(traineeId);
+    } else {
+      if (!progress.moduleProgress[moduleId]) {
+        throw new Error(`Module ${moduleId} not started`);
+      }
+
+      progress.moduleProgress[moduleId].status = 'completed';
+      progress.moduleProgress[moduleId].completedAt = new Date().toISOString();
+      progress.moduleProgress[moduleId].knowledgeCheckScore = knowledgeCheckScore;
+
+      if (!progress.completedModules.includes(moduleId)) {
+        progress.completedModules.push(moduleId);
+      }
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
     }
-
-    progress.moduleProgress[moduleId].status = 'completed';
-    progress.moduleProgress[moduleId].completedAt = new Date().toISOString();
-    progress.moduleProgress[moduleId].knowledgeCheckScore = knowledgeCheckScore;
-
-    if (!progress.completedModules.includes(moduleId)) {
-      progress.completedModules.push(moduleId);
-    }
-
-    await this.saveProgress(traineeId, progress);
-    return progress;
   }
 
-  // Add supervisor signoff
+  // ============================================
+  // SUPERVISOR SIGNOFF
+  // ============================================
   async addSupervisorSignoff(traineeId, moduleId, supervisorName) {
     const progress = await this.getProgress(traineeId);
     if (!progress) {
       throw new Error(`Progress not found for trainee: ${traineeId}`);
     }
 
-    if (!progress.moduleProgress[moduleId]) {
-      throw new Error(`Module ${moduleId} not found in progress`);
+    if (this.useSupabase) {
+      await supabase
+        .from('module_progress')
+        .update({
+          supervisor_signoff: true,
+          supervisor_name: supervisorName,
+          signoff_at: new Date().toISOString(),
+        })
+        .eq('trainee_id', traineeId)
+        .eq('module_id', moduleId);
+
+      return await this.getProgress(traineeId);
+    } else {
+      if (!progress.moduleProgress[moduleId]) {
+        throw new Error(`Module ${moduleId} not found in progress`);
+      }
+
+      progress.moduleProgress[moduleId].supervisorSignoff = true;
+      progress.moduleProgress[moduleId].supervisorName = supervisorName;
+      progress.moduleProgress[moduleId].signoffAt = new Date().toISOString();
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
     }
-
-    progress.moduleProgress[moduleId].supervisorSignoff = true;
-    progress.moduleProgress[moduleId].supervisorName = supervisorName;
-    progress.moduleProgress[moduleId].signoffAt = new Date().toISOString();
-
-    await this.saveProgress(traineeId, progress);
-    return progress;
   }
 
-  // Get all trainee progress (for admin)
+  // ============================================
+  // GET ALL PROGRESS (ADMIN)
+  // ============================================
   async getAllProgress() {
     await this.init();
-    const files = await listFiles(this.progressPath);
-    const progressFiles = files.filter(f => f.endsWith('.json'));
 
-    const allProgress = await Promise.all(
-      progressFiles.map(async (file) => {
-        const traineeId = file.replace('.json', '');
-        return await this.getProgress(traineeId);
-      })
-    );
+    if (this.useSupabase) {
+      const { data: allProgress, error } = await supabase
+        .from('progress')
+        .select('*')
+        .order('last_activity', { ascending: false });
 
-    return allProgress.filter(Boolean);
+      if (error) throw new Error(error.message);
+
+      // Get all module progress
+      const { data: allModuleProgress } = await supabase
+        .from('module_progress')
+        .select('*');
+
+      // Map and combine
+      return allProgress.map(p => {
+        const moduleProgress = (allModuleProgress || []).filter(
+          mp => mp.trainee_id === p.trainee_id
+        );
+        return this.mapProgressFromDb(p, moduleProgress);
+      });
+    } else {
+      const files = await listFiles(this.progressPath);
+      const progressFiles = files.filter(f => f.endsWith('.json'));
+
+      const allProgress = await Promise.all(
+        progressFiles.map(async (file) => {
+          const traineeId = file.replace('.json', '');
+          return await this.getProgress(traineeId);
+        })
+      );
+
+      return allProgress.filter(Boolean);
+    }
   }
 
-  // Reset trainee progress
+  // ============================================
+  // RESET PROGRESS
+  // ============================================
   async resetProgress(traineeId) {
     const progress = await this.getProgress(traineeId);
     if (!progress) {
       throw new Error(`Progress not found for trainee: ${traineeId}`);
     }
 
-    progress.moduleProgress = {};
-    progress.completedModules = [];
-    progress.currentModule = null;
-    progress.currentStep = null;
-    progress.lastActivity = new Date().toISOString();
+    if (this.useSupabase) {
+      // Delete all module progress
+      await supabase
+        .from('module_progress')
+        .delete()
+        .eq('trainee_id', traineeId);
 
-    await this.saveProgress(traineeId, progress);
-    return progress;
+      // Delete all step progress
+      await supabase
+        .from('step_progress')
+        .delete()
+        .eq('trainee_id', traineeId);
+
+      // Update main progress
+      await supabase
+        .from('progress')
+        .update({
+          completed_at: null,
+          last_activity: new Date().toISOString(),
+        })
+        .eq('trainee_id', traineeId);
+
+      return await this.getProgress(traineeId);
+    } else {
+      progress.moduleProgress = {};
+      progress.completedModules = [];
+      progress.currentModule = null;
+      progress.currentStep = null;
+      progress.lastActivity = new Date().toISOString();
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
+    }
   }
 
-  // Update trainee profile (name, etc.)
+  // ============================================
+  // UPDATE PROFILE
+  // ============================================
   async updateProfile(traineeId, updates) {
     const progress = await this.getProgress(traineeId);
     if (!progress) {
       throw new Error(`Progress not found for trainee: ${traineeId}`);
     }
 
-    // Update allowed fields
-    if (updates.traineeName !== undefined) {
-      progress.traineeName = updates.traineeName;
-    }
-    if (updates.cartType !== undefined) {
-      progress.cartType = updates.cartType;
-    }
-    if (updates.email !== undefined) {
-      progress.email = updates.email;
-    }
-    if (updates.department !== undefined) {
-      progress.department = updates.department;
-    }
-    if (updates.supervisor !== undefined) {
-      progress.supervisor = updates.supervisor;
-    }
-    if (updates.hireDate !== undefined) {
-      progress.hireDate = updates.hireDate;
-    }
-    if (updates.jobRole !== undefined) {
-      progress.jobRole = updates.jobRole;
-    }
-    if (updates.certifications !== undefined) {
-      progress.certifications = updates.certifications;
-    }
-    if (updates.phone !== undefined) {
-      progress.phone = updates.phone;
-    }
-    if (updates.emergencyContact !== undefined) {
-      progress.emergencyContact = updates.emergencyContact;
-    }
-    if (updates.notes !== undefined) {
-      progress.notes = updates.notes;
-    }
+    if (this.useSupabase) {
+      const dbUpdates = {};
+      if (updates.traineeName !== undefined) dbUpdates.trainee_name = updates.traineeName;
+      if (updates.cartType !== undefined) dbUpdates.cart_type = updates.cartType;
 
-    await this.saveProgress(traineeId, progress);
-    return progress;
+      await supabase
+        .from('progress')
+        .update(dbUpdates)
+        .eq('trainee_id', traineeId);
+
+      return await this.getProgress(traineeId);
+    } else {
+      const allowedFields = [
+        'traineeName', 'cartType', 'email', 'department', 'supervisor',
+        'hireDate', 'jobRole', 'certifications', 'phone', 'emergencyContact', 'notes'
+      ];
+
+      for (const field of allowedFields) {
+        if (updates[field] !== undefined) {
+          progress[field] = updates[field];
+        }
+      }
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
+    }
   }
 
-  // Set module progress precisely
+  // ============================================
+  // SET MODULE PROGRESS (ADMIN)
+  // ============================================
   async setModuleProgress(traineeId, moduleId, moduleProgress) {
     const progress = await this.getProgress(traineeId);
     if (!progress) {
       throw new Error(`Progress not found for trainee: ${traineeId}`);
     }
 
-    // Set or update module progress
-    progress.moduleProgress[moduleId] = {
-      status: moduleProgress.status || 'not_started',
-      startedAt: moduleProgress.startedAt || new Date().toISOString(),
-      completedAt: moduleProgress.completedAt || null,
-      completedSteps: moduleProgress.completedSteps || [],
-      knowledgeCheckScore: moduleProgress.knowledgeCheckScore || null,
-      supervisorSignoff: moduleProgress.supervisorSignoff || false,
-      supervisorName: moduleProgress.supervisorName || null,
-      signoffAt: moduleProgress.signoffAt || null,
-    };
+    if (this.useSupabase) {
+      await supabase
+        .from('module_progress')
+        .upsert({
+          trainee_id: traineeId,
+          module_id: moduleId,
+          status: moduleProgress.status || 'not-started',
+          started_at: moduleProgress.startedAt,
+          completed_at: moduleProgress.completedAt,
+        }, { onConflict: 'trainee_id,module_id' });
 
-    // Update completedModules array
-    if (moduleProgress.status === 'completed') {
-      if (!progress.completedModules.includes(moduleId)) {
-        progress.completedModules.push(moduleId);
-      }
+      return await this.getProgress(traineeId);
     } else {
-      progress.completedModules = progress.completedModules.filter(m => m !== moduleId);
-    }
+      progress.moduleProgress[moduleId] = {
+        status: moduleProgress.status || 'not_started',
+        startedAt: moduleProgress.startedAt || new Date().toISOString(),
+        completedAt: moduleProgress.completedAt || null,
+        completedSteps: moduleProgress.completedSteps || [],
+        knowledgeCheckScore: moduleProgress.knowledgeCheckScore || null,
+        supervisorSignoff: moduleProgress.supervisorSignoff || false,
+        supervisorName: moduleProgress.supervisorName || null,
+        signoffAt: moduleProgress.signoffAt || null,
+      };
 
-    await this.saveProgress(traineeId, progress);
-    return progress;
+      if (moduleProgress.status === 'completed') {
+        if (!progress.completedModules.includes(moduleId)) {
+          progress.completedModules.push(moduleId);
+        }
+      } else {
+        progress.completedModules = progress.completedModules.filter(m => m !== moduleId);
+      }
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
+    }
   }
 
-  // Reset specific module progress
+  // ============================================
+  // RESET MODULE PROGRESS
+  // ============================================
   async resetModuleProgress(traineeId, moduleId) {
     const progress = await this.getProgress(traineeId);
     if (!progress) {
       throw new Error(`Progress not found for trainee: ${traineeId}`);
     }
 
-    delete progress.moduleProgress[moduleId];
-    progress.completedModules = progress.completedModules.filter(m => m !== moduleId);
-    
-    // If current module was reset, clear it
-    if (progress.currentModule === moduleId) {
-      progress.currentModule = null;
-      progress.currentStep = null;
-    }
+    if (this.useSupabase) {
+      await supabase
+        .from('module_progress')
+        .delete()
+        .eq('trainee_id', traineeId)
+        .eq('module_id', moduleId);
 
-    await this.saveProgress(traineeId, progress);
-    return progress;
+      await supabase
+        .from('step_progress')
+        .delete()
+        .eq('trainee_id', traineeId)
+        .eq('module_id', moduleId);
+
+      return await this.getProgress(traineeId);
+    } else {
+      delete progress.moduleProgress[moduleId];
+      progress.completedModules = progress.completedModules.filter(m => m !== moduleId);
+
+      if (progress.currentModule === moduleId) {
+        progress.currentModule = null;
+        progress.currentStep = null;
+      }
+
+      await this.saveProgress(traineeId, progress);
+      return progress;
+    }
   }
 
-  // Reset password (store hashed password)
-  async resetPassword(traineeId, newPasswordHash) {
-    const progress = await this.getProgress(traineeId);
-    if (!progress) {
-      throw new Error(`Progress not found for trainee: ${traineeId}`);
+  // ============================================
+  // HELPERS
+  // ============================================
+  mapProgressFromDb(progressData, moduleData = [], stepData = []) {
+    const moduleProgress = {};
+    const completedModules = [];
+
+    for (const mod of moduleData) {
+      const steps = stepData.filter(
+        s => s.trainee_id === mod.trainee_id && s.module_id === mod.module_id
+      );
+
+      moduleProgress[mod.module_id] = {
+        status: mod.status,
+        startedAt: mod.started_at,
+        completedAt: mod.completed_at,
+        completedSteps: steps.filter(s => s.status === 'completed').map(s => s.step_id),
+        knowledgeCheckScore: null,
+        supervisorSignoff: mod.supervisor_signoff || false,
+        supervisorName: mod.supervisor_name,
+        signoffAt: mod.signoff_at,
+      };
+
+      if (mod.status === 'completed') {
+        completedModules.push(mod.module_id);
+      }
     }
 
-    progress.passwordHash = newPasswordHash;
-    progress.passwordResetAt = new Date().toISOString();
-    progress.passwordResetByAdmin = true;
-
-    await this.saveProgress(traineeId, progress);
-    return { success: true, message: 'Password reset successfully' };
+    return {
+      traineeId: progressData.trainee_id,
+      traineeName: progressData.trainee_name,
+      cartType: progressData.cart_type,
+      startedAt: progressData.started_at || progressData.created_at,
+      lastActivity: progressData.last_activity,
+      completedAt: progressData.completed_at,
+      completedModules,
+      currentModule: null,
+      currentStep: null,
+      moduleProgress,
+    };
   }
 }
 
