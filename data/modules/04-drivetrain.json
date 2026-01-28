@@ -1,0 +1,33 @@
+{
+  "id": "04-drivetrain",
+  "title": "Drivetrain & Motor Installation",
+  "description": "Install the electric motor, motor controller, and drivetrain components.",
+  "estimatedTime": "90 minutes",
+  "thumbnailUrl": "/images/modules/drivetrain.png",
+  "prerequisites": ["01-orientation", "02-frame-chassis", "03-electrical"],
+  "requiresSupervisorSignoff": false,
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Motor Mount Installation",
+      "instructions": "Install motor mounting bracket and secure motor with proper hardware.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Motor+Mount",
+      "videoDuration": 240,
+      "tools": ["Torque wrench", "Socket set"],
+      "materials": ["Motor", "Motor mount", "Hardware"],
+      "safetyWarnings": [{"severity": "danger", "text": "Motor weighs 75 lbs. Use lifting equipment."}],
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "What is the weight of the motor?",
+      "type": "multiple-choice",
+      "options": ["25 lbs", "50 lbs", "75 lbs", "100 lbs"],
+      "correctAnswer": 2,
+      "explanation": "The motor weighs 75 lbs and requires lifting equipment."
+    }
+  ]
+}

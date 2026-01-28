@@ -1,0 +1,33 @@
+{
+  "id": "03-electrical",
+  "title": "Electrical System Installation",
+  "description": "Install battery pack, wiring harness, controller, and all electrical components for the electric drive system.",
+  "estimatedTime": "120 minutes",
+  "thumbnailUrl": "/images/modules/electrical.png",
+  "prerequisites": ["01-orientation", "02-frame-chassis"],
+  "requiresSupervisorSignoff": true,
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Battery Tray Installation",
+      "instructions": "Install battery mounting tray and secure with Grade 8 hardware. Ensure proper drainage holes are clear.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Battery+Tray",
+      "videoDuration": 180,
+      "tools": ["Socket set", "Torque wrench"],
+      "materials": ["Battery tray", "Mounting hardware"],
+      "safetyWarnings": [{"severity": "warning", "text": "Battery tray must be level to prevent acid leaks."}],
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "Before connecting batteries, you must:",
+      "type": "multiple-choice",
+      "options": ["Work quickly", "Triple-check polarity", "Use any tools", "Skip inspection"],
+      "correctAnswer": 1,
+      "explanation": "Always verify polarity three times before connecting batteries."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "07-quality-inspection",
+  "title": "Quality Checks & Final Inspection",
+  "description": "Perform comprehensive quality checks and final inspection before cart delivery.",
+  "estimatedTime": "45 minutes",
+  "thumbnailUrl": "/images/modules/quality-inspection.png",
+  "prerequisites": ["01-orientation", "02-frame-chassis", "03-electrical", "04-drivetrain", "05-steering-suspension", "06-body-accessories"],
+  "requiresSupervisorSignoff": true,
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Final Systems Check",
+      "instructions": "Verify all electrical connections, test motor operation, check steering, brakes, and lights. Complete checklist.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Systems+Check",
+      "videoDuration": 300,
+      "tools": ["Multimeter", "Torque wrench", "Inspection checklist"],
+      "materials": ["QC checklist"],
+      "safetyWarnings": [{"severity": "danger", "text": "Never skip quality checks. Customer safety depends on thoroughness."}],
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "Why is final quality inspection critical?",
+      "type": "multiple-choice",
+      "options": ["It's not important", "Customer safety depends on it", "Just paperwork", "To delay delivery"],
+      "correctAnswer": 1,
+      "explanation": "Final inspection ensures every cart meets safety and quality standards."
+    }
+  ]
+}

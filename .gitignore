@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Production build
+dist/
+build/
+client/dist/
+client/build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Progress data (runtime)
+progress/*.json
+!progress/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage/
+
+# Misc
+.cache/
+
+# large videos
+*/public/videos/

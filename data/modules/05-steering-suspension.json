@@ -1,0 +1,33 @@
+{
+  "id": "05-steering-suspension",
+  "title": "Steering & Suspension",
+  "description": "Install steering column, linkages, and complete suspension assembly.",
+  "estimatedTime": "75 minutes",
+  "thumbnailUrl": "/images/modules/steering-suspension.png",
+  "prerequisites": ["01-orientation", "02-frame-chassis"],
+  "requiresSupervisorSignoff": false,
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Steering Column Installation",
+      "instructions": "Install steering column and secure with proper fasteners. Check for smooth rotation.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Steering+Column",
+      "videoDuration": 200,
+      "tools": ["Socket set", "Torque wrench"],
+      "materials": ["Steering column", "Column mount"],
+      "safetyWarnings": [{"severity": "warning", "text": "Ensure steering column is properly aligned."}],
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "Why is steering column alignment critical?",
+      "type": "multiple-choice",
+      "options": ["It's not", "For smooth operation and safety", "Just looks", "No reason"],
+      "correctAnswer": 1,
+      "explanation": "Proper alignment ensures smooth, safe steering operation."
+    }
+  ]
+}

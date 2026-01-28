@@ -1,0 +1,230 @@
+{
+  "id": "01-orientation",
+  "title": "Orientation & Safety",
+  "description": "Essential safety protocols and workshop orientation for golf cart assembly. Learn about personal protective equipment, tool safety, and emergency procedures.",
+  "estimatedTime": "45 minutes",
+  "thumbnailUrl": "/images/modules/orientation.png",
+  "prerequisites": [],
+  "requiresSupervisorSignoff": true,
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Welcome & Introduction",
+      "instructions": "Welcome to Golfin Garage! In this training, you'll learn the complete process of assembling electric golf carts. This module covers essential safety information that will keep you and your coworkers safe throughout the build process.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Welcome+Video",
+      "videoDuration": 120,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Welcome",
+      "tools": [],
+      "materials": [],
+      "safetyWarnings": [],
+      "commonMistakes": [],
+      "whyItMatters": "Understanding the complete process helps you see how each step contributes to building a safe, reliable golf cart.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    },
+    {
+      "id": "step-2",
+      "title": "Personal Protective Equipment (PPE)",
+      "instructions": "Before starting any assembly work, you must wear the following PPE:\n\n1. Safety glasses (ANSI Z87.1 rated)\n2. Steel-toed boots\n3. Work gloves (nitrile for electrical work)\n4. Hearing protection in designated areas\n5. High-visibility vest\n\nYour PPE is located in your assigned locker. Inspect each item before use for damage.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=PPE+Tutorial",
+      "videoDuration": 180,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=PPE",
+      "tools": [],
+      "materials": ["Safety glasses", "Steel-toed boots", "Work gloves", "Hearing protection", "Hi-vis vest"],
+      "safetyWarnings": [
+        {
+          "severity": "danger",
+          "text": "NEVER work without proper PPE. Even minor tasks can result in serious injury."
+        },
+        {
+          "severity": "warning",
+          "text": "Replace damaged PPE immediately. Do not attempt repairs."
+        }
+      ],
+      "commonMistakes": [
+        "Using scratched or damaged safety glasses",
+        "Wearing the wrong type of gloves for electrical work",
+        "Forgetting hearing protection in high-noise areas"
+      ],
+      "whyItMatters": "PPE is your last line of defense against injury. Golf cart assembly involves heavy components, sharp edges, electrical systems, and moving parts.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    },
+    {
+      "id": "step-3",
+      "title": "Workshop Layout & Safety Zones",
+      "instructions": "Our workshop is divided into safety zones:\n\n**GREEN ZONE** - Assembly stations (where you'll work)\n**YELLOW ZONE** - Parts staging and material handling\n**RED ZONE** - Battery charging and electrical testing (restricted access)\n\nAlways stay in your designated zone unless authorized. Use marked walkways only.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Workshop+Layout",
+      "videoDuration": 150,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Workshop",
+      "tools": [],
+      "materials": [],
+      "safetyWarnings": [
+        {
+          "severity": "danger",
+          "text": "RED ZONES contain high-voltage equipment. Entry requires Level 2 certification and supervisor approval."
+        }
+      ],
+      "commonMistakes": [
+        "Cutting through restricted areas to save time",
+        "Storing tools in walkways"
+      ],
+      "whyItMatters": "Safety zones prevent accidents by separating incompatible operations and controlling access to hazardous areas.",
+      "diagrams": ["https://via.placeholder.com/600x400?text=Workshop+Map"],
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": false
+    },
+    {
+      "id": "step-4",
+      "title": "Tool Safety & Usage",
+      "instructions": "You'll use various power and hand tools during assembly. Basic rules:\n\n1. Inspect tools before each use\n2. Use the right tool for the job\n3. Keep work area clear of trip hazards\n4. Disconnect power tools when changing bits/blades\n5. Report damaged tools immediately\n\nNever use a tool you haven't been trained on. Ask your supervisor for additional training.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Tool+Safety",
+      "videoDuration": 240,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Tools",
+      "tools": ["Impact wrench", "Torque wrench", "Multimeter", "Wire strippers", "Socket set"],
+      "materials": [],
+      "safetyWarnings": [
+        {
+          "severity": "danger",
+          "text": "Overtightening fasteners can crack components or strip threads. Always use proper torque settings."
+        },
+        {
+          "severity": "warning",
+          "text": "Keep fingers clear of pinch points when using hand tools."
+        }
+      ],
+      "commonMistakes": [
+        "Using a tool on the wrong size fastener",
+        "Applying excessive force instead of using penetrating oil",
+        "Working with dull cutting tools"
+      ],
+      "whyItMatters": "Proper tool use prevents injuries and ensures quality assembly. Damaged or improperly used tools can ruin expensive components.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    },
+    {
+      "id": "step-5",
+      "title": "Electrical Safety for Battery Systems",
+      "instructions": "Electric golf carts use 48V battery systems. While not as dangerous as household 120V, they can still cause:\n\n- Burns from short circuits\n- Fire from improper connections\n- Equipment damage from reverse polarity\n\n**GOLDEN RULES:**\n1. ALWAYS disconnect batteries before working on electrical\n2. Never wear metal jewelry when working with batteries\n3. Check polarity THREE TIMES before connecting\n4. Use insulated tools for electrical work\n5. Keep fire extinguisher nearby",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Electrical+Safety",
+      "videoDuration": 300,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Electrical",
+      "tools": ["Insulated tools", "Multimeter", "Wire strippers"],
+      "materials": ["Fire extinguisher"],
+      "safetyWarnings": [
+        {
+          "severity": "danger",
+          "text": "NEVER connect batteries with reversed polarity. This WILL cause fire or explosion."
+        },
+        {
+          "severity": "danger",
+          "text": "Remove all metal jewelry before working on electrical systems."
+        },
+        {
+          "severity": "warning",
+          "text": "Battery terminals can arc and cause severe burns. Handle with care."
+        }
+      ],
+      "commonMistakes": [
+        "Rushing battery connections without checking polarity",
+        "Using non-insulated tools on live circuits",
+        "Assuming batteries are disconnected without verifying"
+      ],
+      "whyItMatters": "Electrical mistakes can cause immediate injury, destroy expensive components, and create fire hazards. There are no minor electrical errors.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    },
+    {
+      "id": "step-6",
+      "title": "Emergency Procedures",
+      "instructions": "Know these emergency procedures:\n\n**INJURY:** Stop work immediately. Alert supervisor and call for first aid. Do not move injured person unless in immediate danger.\n\n**FIRE:** Pull nearest fire alarm. Use extinguisher only if fire is small and you're trained. Evacuate if fire spreads.\n\n**ELECTRICAL INCIDENT:** Do NOT touch person in contact with electricity. Disconnect power first, then call for help.\n\n**Emergency Contacts:**\n- First Aid: Extension 911\n- Supervisor: Extension 100\n- Maintenance: Extension 200",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Emergency+Procedures",
+      "videoDuration": 180,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Emergency",
+      "tools": [],
+      "materials": ["First aid kit", "Fire extinguisher", "Emergency phone"],
+      "safetyWarnings": [
+        {
+          "severity": "danger",
+          "text": "In electrical emergencies, touching the victim without disconnecting power can electrocute you too."
+        }
+      ],
+      "commonMistakes": [
+        "Not knowing where emergency equipment is located",
+        "Hesitating to report minor injuries that worsen later",
+        "Trying to fight large fires instead of evacuating"
+      ],
+      "whyItMatters": "Quick, correct response to emergencies saves lives. Every second counts in a serious incident.",
+      "diagrams": ["https://via.placeholder.com/600x400?text=Emergency+Exits"],
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "What is the minimum PPE required before starting any assembly work?",
+      "type": "multiple-choice",
+      "options": [
+        "Safety glasses and steel-toed boots only",
+        "Safety glasses, steel-toed boots, work gloves, and high-visibility vest",
+        "Just safety glasses",
+        "Whatever is comfortable"
+      ],
+      "correctAnswer": 1,
+      "explanation": "All four items (safety glasses, steel-toed boots, work gloves, and hi-vis vest) are required PPE. Additional items like hearing protection may be needed in specific areas."
+    },
+    {
+      "id": "check-2",
+      "question": "Before working on any electrical components, you must:",
+      "type": "multiple-choice",
+      "options": [
+        "Work quickly to minimize exposure",
+        "Disconnect the batteries first",
+        "Wear rubber gloves only",
+        "Have someone watch you"
+      ],
+      "correctAnswer": 1,
+      "explanation": "ALWAYS disconnect batteries before working on electrical systems. This is the #1 electrical safety rule."
+    },
+    {
+      "id": "check-3",
+      "question": "What should you do if you discover a tool is damaged?",
+      "type": "multiple-choice",
+      "options": [
+        "Use it carefully and report it later",
+        "Try to repair it yourself",
+        "Stop using it immediately and report to supervisor",
+        "Only report it if it's a power tool"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Damaged tools must be reported immediately and taken out of service. Never use or attempt to repair damaged tools."
+    },
+    {
+      "id": "check-4",
+      "question": "RED ZONES in the workshop are:",
+      "type": "multiple-choice",
+      "options": [
+        "Areas where you should work faster",
+        "Battery charging and electrical testing areas requiring special certification",
+        "Break rooms",
+        "Storage areas"
+      ],
+      "correctAnswer": 1,
+      "explanation": "RED ZONES contain high-voltage equipment and require Level 2 certification and supervisor approval to enter."
+    },
+    {
+      "id": "check-5",
+      "question": "If you witness an electrical incident where someone is being shocked, your first action should be:",
+      "type": "multiple-choice",
+      "options": [
+        "Pull them away from the electrical source",
+        "Call for help",
+        "Disconnect the power source first",
+        "Pour water on the equipment"
+      ],
+      "correctAnswer": 2,
+      "explanation": "NEVER touch someone being shocked. Disconnect power first, then call for help. Touching them can electrocute you too."
+    }
+  ]
+}

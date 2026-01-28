@@ -1,0 +1,33 @@
+{
+  "id": "06-body-accessories",
+  "title": "Body Panels & Accessories",
+  "description": "Install body panels, seats, lights, and accessories to complete the cart.",
+  "estimatedTime": "60 minutes",
+  "thumbnailUrl": "/images/modules/body-accessories.png",
+  "prerequisites": ["01-orientation", "02-frame-chassis", "03-electrical"],
+  "requiresSupervisorSignoff": false,
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Body Panel Installation",
+      "instructions": "Install front and rear body panels. Ensure proper alignment and secure with fasteners.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Body+Panels",
+      "videoDuration": 180,
+      "tools": ["Screwdriver set", "Panel alignment tool"],
+      "materials": ["Body panels", "Panel fasteners"],
+      "safetyWarnings": [{"severity": "warning", "text": "Panels have sharp edges. Wear gloves."}],
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "Why wear gloves when handling body panels?",
+      "type": "multiple-choice",
+      "options": ["Not necessary", "Panels have sharp edges", "To look professional", "No reason"],
+      "correctAnswer": 1,
+      "explanation": "Body panels have sharp edges that can cause cuts."
+    }
+  ]
+}

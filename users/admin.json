@@ -1,0 +1,12 @@
+{
+  "id": "admin",
+  "employeeId": "admin",
+  "passwordHash": "$2b$10$CNa7nI.DjsjUxVlPJmGVa.d33dlWK/DC0n9V9mTGqMpsDvQ1PIemG",
+  "name": "Administrator",
+  "email": "",
+  "role": "admin",
+  "createdAt": "2026-01-28T21:06:32.389Z",
+  "updatedAt": "2026-01-28T21:06:32.389Z",
+  "lastLogin": null,
+  "isActive": true
+}

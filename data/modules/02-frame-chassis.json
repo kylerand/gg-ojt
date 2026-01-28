@@ -1,0 +1,94 @@
+{
+  "id": "02-frame-chassis",
+  "title": "Frame & Chassis Assembly",
+  "description": "Assemble the main frame and chassis components that form the structural foundation of the golf cart.",
+  "estimatedTime": "90 minutes",
+  "thumbnailUrl": "/images/modules/frame-chassis.png",
+  "prerequisites": ["01-orientation"],
+  "requiresSupervisorSignoff": false,
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Frame Preparation & Inspection",
+      "instructions": "Inspect the main frame for shipping damage, cracks, or defects. Check all mounting points and holes for proper alignment. Clean any protective coating or debris from welding surfaces.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Frame+Inspection",
+      "videoDuration": 180,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Inspection",
+      "tools": ["Measuring tape", "Level", "Cleaning brush", "Safety glasses"],
+      "materials": ["Main frame", "Cleaning solvent", "Shop rags"],
+      "safetyWarnings": [
+        {
+          "severity": "warning",
+          "text": "Frame components are heavy. Use proper lifting techniques or lifting equipment."
+        }
+      ],
+      "commonMistakes": ["Skipping the inspection step", "Not checking for cracks in weld zones"],
+      "whyItMatters": "A damaged frame cannot be repaired and will compromise the entire cart's structural integrity.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    },
+    {
+      "id": "step-2",
+      "title": "Install Front Suspension Mounts",
+      "instructions": "Attach the front suspension mounting brackets to the frame. Torque all bolts to 45 ft-lbs in a star pattern. Verify brackets are level and square to frame.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Suspension+Mounts",
+      "videoDuration": 240,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Mounts",
+      "tools": ["Torque wrench", "Socket set", "Level", "Thread locker"],
+      "materials": ["Front suspension brackets (2)", "Grade 8 bolts", "Lock washers"],
+      "safetyWarnings": [
+        {
+          "severity": "danger",
+          "text": "Under-torqued suspension bolts can fail during operation causing loss of control."
+        }
+      ],
+      "commonMistakes": ["Not using thread locker", "Uneven torque pattern causing warping"],
+      "whyItMatters": "Suspension mounts carry all steering and handling loads. Proper installation is critical for safety.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    },
+    {
+      "id": "step-3",
+      "title": "Rear Axle Installation",
+      "instructions": "Install the rear axle assembly into frame mounts. Ensure bearings are properly seated. Torque axle mounting bolts to 65 ft-lbs. Check for free rotation.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Axle+Installation",
+      "videoDuration": 300,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Axle",
+      "tools": ["Torque wrench", "Bearing press", "Socket set", "Grease gun"],
+      "materials": ["Rear axle assembly", "Wheel bearings", "Bearing grease"],
+      "safetyWarnings": [
+        {
+          "severity": "danger",
+          "text": "Support axle assembly properly during installation. Dropped axles can cause serious injury."
+        }
+      ],
+      "commonMistakes": ["Installing bearings backwards", "Not greasing bearings properly"],
+      "whyItMatters": "The rear axle transmits all power to the wheels. Improper installation causes premature bearing failure.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "What is the correct torque specification for front suspension mounting bolts?",
+      "type": "multiple-choice",
+      "options": ["30 ft-lbs", "45 ft-lbs", "65 ft-lbs", "80 ft-lbs"],
+      "correctAnswer": 1,
+      "explanation": "Front suspension mounts require 45 ft-lbs torque in a star pattern to ensure even clamping force."
+    },
+    {
+      "id": "check-2",
+      "question": "Why is it important to inspect the frame before assembly?",
+      "type": "multiple-choice",
+      "options": [
+        "It's not important, just a formality",
+        "To find shipping damage or defects that could compromise safety",
+        "Only to clean off dirt",
+        "Just to waste time"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Frame inspection catches damage that would compromise structural integrity. A damaged frame cannot be repaired."
+    }
+  ]
+}

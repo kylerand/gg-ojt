@@ -1,0 +1,34 @@
+{
+  "id": "electric-standard",
+  "name": "Standard Electric Golf Cart",
+  "description": "4-passenger electric golf cart with standard features",
+  "type": "electric",
+  "batterySystem": {
+    "voltage": 48,
+    "type": "Lead-acid",
+    "count": 6,
+    "batteryVoltage": 8
+  },
+  "motor": {
+    "type": "AC induction",
+    "power": "5 HP",
+    "manufacturer": "AMD"
+  },
+  "features": [
+    "4 passenger seating",
+    "LED headlights",
+    "USB charging ports",
+    "Rear cargo bed",
+    "Digital speedometer",
+    "Regenerative braking"
+  ],
+  "modules": [
+    "01-orientation",
+    "02-frame-chassis",
+    "03-electrical",
+    "04-drivetrain",
+    "05-steering-suspension",
+    "06-body-accessories",
+    "07-quality-inspection"
+  ]
+}
