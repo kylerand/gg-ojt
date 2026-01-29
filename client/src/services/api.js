@@ -1,6 +1,19 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Use environment variable, or production URL if in production, or localhost for dev
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // If running on Vercel (production), use Railway backend
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return 'https://gg-ojt-production.up.railway.app';
+  }
+  // Local development
+  return 'http://localhost:3001';
+};
+
+const API_BASE_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,

@@ -1,6 +1,19 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Use environment variable, or production URL if in production, or localhost for dev
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // If running on Vercel (production), use Railway backend
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return 'https://gg-ojt-production.up.railway.app';
+  }
+  // Local development
+  return 'http://localhost:3001';
+};
+
+const API_URL = getApiUrl();
 
 const AuthContext = createContext(null);
 
