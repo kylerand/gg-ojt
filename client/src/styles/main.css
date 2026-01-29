@@ -4293,6 +4293,418 @@ body {
     max-width: none;
     width: 100%;
   }
+
+  /* === ADMIN CONTENT: Mobile friendly === */
+  .admin-content {
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+
+  /* Admin tabs as horizontal scroll with icons only */
+  .admin-tab-icon {
+    font-size: 1.125rem;
+  }
+
+  .admin-tab-label {
+    display: none;
+  }
+
+  /* === TRAINEE MANAGEMENT: Stack layout === */
+  .trainee-list-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .trainee-list {
+    max-height: 300px;
+  }
+
+  .trainee-list-item {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .trainee-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .trainee-name {
+    font-size: 0.9rem;
+  }
+
+  .trainee-id {
+    font-size: 0.7rem;
+  }
+
+  .progress-circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .trainee-detail-panel {
+    padding: 1rem;
+  }
+
+  .trainee-detail-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .trainee-detail-header .trainee-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    margin: 0 auto;
+  }
+
+  .trainee-detail-header h3 {
+    font-size: 1.125rem;
+  }
+
+  .trainee-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .trainee-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* === ANALYTICS: Compact cards === */
+  .analytics-metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .metric-card {
+    padding: 0.75rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .metric-icon {
+    font-size: 1.5rem;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+  }
+
+  .metric-label {
+    font-size: 0.75rem;
+  }
+
+  .analytics-section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .analytics-section h3 {
+    font-size: 1rem;
+  }
+
+  /* Module chart compact */
+  .module-chart-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .module-chart-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .module-chart-title {
+    font-size: 0.8rem;
+  }
+
+  .module-chart-bar {
+    height: 16px;
+  }
+
+  .chart-percentage {
+    display: none;
+  }
+
+  /* === MODULE EDITOR: Full width === */
+  .module-editor {
+    padding: 0;
+  }
+
+  .module-editor-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .module-editor-header h2 {
+    font-size: 1.125rem;
+  }
+
+  .editor-header-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .editor-header-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .module-editor-body {
+    padding: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Steps list compact */
+  .steps-list {
+    gap: 0.5rem;
+  }
+
+  .step-item {
+    padding: 0.75rem;
+  }
+
+  .step-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .step-item-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Step editor compact */
+  .step-editor {
+    padding: 1rem;
+  }
+
+  .step-editor-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .step-editor-header h4 {
+    font-size: 1rem;
+  }
+
+  .step-editor-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .step-editor-actions .btn {
+    flex: 1;
+  }
+
+  /* Array items (tools, materials) */
+  .array-items {
+    gap: 0.375rem;
+  }
+
+  .array-item {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .array-input-row {
+    flex-direction: column;
+  }
+
+  /* Questions editor */
+  .question-preview {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .question-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .question-text {
+    font-size: 0.875rem;
+  }
+
+  .question-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  /* === Q&A MANAGEMENT: Simplified === */
+  .qa-filters {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .qa-filter-select {
+    width: 100%;
+  }
+
+  .qa-item {
+    padding: 1rem;
+  }
+
+  .qa-item-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .qa-question-text {
+    font-size: 0.9rem;
+  }
+
+  .qa-meta {
+    font-size: 0.7rem;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .qa-answer-form textarea {
+    font-size: 0.875rem;
+  }
+
+  /* === TRAINEE EDITOR MODAL: Full screen === */
+  .trainee-editor-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .trainee-editor {
+    max-width: none;
+    max-height: none;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .trainee-editor-header {
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    background: var(--surface-color);
+    z-index: 10;
+  }
+
+  .trainee-editor-header h2 {
+    font-size: 1.125rem;
+  }
+
+  .trainee-editor-body {
+    padding: 1rem;
+    padding-bottom: 100px;
+  }
+
+  .trainee-editor-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: var(--surface-color);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  }
+
+  .trainee-editor-footer .btn {
+    flex: 1;
+  }
+
+  /* Module progress in editor */
+  .module-progress-card {
+    padding: 0.75rem;
+  }
+
+  .module-progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .module-progress-header h4 {
+    font-size: 0.9rem;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    gap: 0.25rem;
+  }
+
+  .step-checkbox {
+    width: 36px;
+    height: 36px;
+    font-size: 0.7rem;
+  }
+
+  /* Certifications section */
+  .certifications-list {
+    gap: 0.5rem;
+  }
+
+  .certification-item {
+    padding: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .cert-info {
+    width: 100%;
+  }
+
+  .cert-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .add-cert-form {
+    gap: 0.5rem;
+  }
+
+  .cert-date-inputs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* === VIDEO UPLOADER: Compact === */
+  .video-uploader-drop-zone {
+    padding: 1.5rem 1rem;
+  }
+
+  .drop-zone-icon {
+    font-size: 2rem;
+  }
+
+  .drop-zone-text {
+    font-size: 0.875rem;
+  }
+
+  .video-upload-progress {
+    padding: 1rem;
+  }
+
+  .upload-progress-header h4 {
+    font-size: 0.8rem;
+  }
 }
 
 /* === EXTRA SMALL SCREENS (< 375px) === */
