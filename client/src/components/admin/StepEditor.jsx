@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Button from '../common/Button';
-import api from '../../services/api';
+import VideoUploader from './VideoUploader';
 
 function StepEditor({ step, onSave, onCancel, onDelete }) {
   const [formData, setFormData] = useState({
@@ -18,45 +18,9 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
   const [newWarning, setNewWarning] = useState('');
   const [newTool, setNewTool] = useState('');
   const [newMaterial, setNewMaterial] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleVideoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('video/')) {
-      alert('Please select a video file');
-      return;
-    }
-
-    // Validate file size (max 500MB)
-    if (file.size > 500 * 1024 * 1024) {
-      alert('Video file must be less than 500MB');
-      return;
-    }
-
-    setIsUploading(true);
-    const formDataUpload = new FormData();
-    formDataUpload.append('video', file);
-
-    try {
-      const response = await api.post('/admin/upload', formDataUpload, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      if (response.data.url) {
-        handleChange('videoUrl', response.data.url);
-      }
-    } catch (error) {
-      console.error('Failed to upload video:', error);
-      alert('Failed to upload video');
-    } finally {
-      setIsUploading(false);
-    }
   };
 
   // Array item management
@@ -121,48 +85,11 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
         {/* Video Upload */}
         <div className="form-group">
           <label className="form-label">Training Video</label>
-          <div className="video-upload-section">
-            {formData.videoUrl && (
-              <div className="video-preview">
-                <video 
-                  src={formData.videoUrl} 
-                  controls 
-                  style={{ maxWidth: '300px', maxHeight: '200px' }}
-                />
-                <Button 
-                  variant="outline" 
-                  size="small" 
-                  onClick={() => handleChange('videoUrl', '')}
-                >
-                  Remove Video
-                </Button>
-              </div>
-            )}
-            <div className="video-upload-controls">
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleVideoUpload}
-                id={`video-upload-${step.id}`}
-                style={{ display: 'none' }}
-                disabled={isUploading}
-              />
-              <label 
-                htmlFor={`video-upload-${step.id}`} 
-                className={`btn btn-outline ${isUploading ? 'disabled' : ''}`}
-              >
-                {isUploading ? '📤 Uploading...' : '📹 Upload Video'}
-              </label>
-              <span className="form-help">Or enter URL:</span>
-              <input
-                type="text"
-                className="form-input"
-                value={formData.videoUrl}
-                onChange={(e) => handleChange('videoUrl', e.target.value)}
-                placeholder="/videos/step-video.mp4"
-              />
-            </div>
-          </div>
+          <VideoUploader
+            currentVideoUrl={formData.videoUrl}
+            onUploadComplete={(url) => handleChange('videoUrl', url)}
+            onRemove={() => handleChange('videoUrl', '')}
+          />
         </div>
 
         <div className="form-row">
