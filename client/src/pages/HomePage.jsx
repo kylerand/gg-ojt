@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTraining } from '../context/TrainingContext';
+import { useAuth } from '../context/AuthContext';
 import { getModules, getModule } from '../services/api';
 import ModuleCard from '../components/training/ModuleCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -10,17 +11,29 @@ function HomePage() {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resumeInfo, setResumeInfo] = useState(null);
-  const { trainee, progress, currentPosition } = useTraining();
+  const { trainee, progress, currentPosition, isInitialized, loadProgress } = useTraining();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  // Load progress if we're authenticated but don't have trainee yet
   useEffect(() => {
-    if (!trainee) {
+    if (isAuthenticated && user && !trainee && isInitialized) {
+      loadProgress(user.employeeId);
+    }
+  }, [isAuthenticated, user, trainee, isInitialized, loadProgress]);
+
+  useEffect(() => {
+    // Wait for auth to be ready
+    if (!isAuthenticated) {
       navigate('/');
       return;
     }
 
-    loadModules();
-  }, [trainee, navigate]);
+    // Only load modules once we have trainee data or auth is confirmed
+    if (trainee || user) {
+      loadModules();
+    }
+  }, [trainee, user, isAuthenticated, navigate]);
 
   // Load resume info when we have a saved position
   useEffect(() => {

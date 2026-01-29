@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getModule } from '../services/api';
 import { useTraining } from '../context/TrainingContext';
+import { useAuth } from '../context/AuthContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -10,16 +11,27 @@ function ModuleOverviewPage() {
   const { moduleId } = useParams();
   const [module, setModule] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { trainee, progress } = useTraining();
+  const { trainee, progress, isInitialized, loadProgress } = useTraining();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  // Load progress if we're authenticated but don't have trainee yet
   useEffect(() => {
-    if (!trainee) {
+    if (isAuthenticated && user && !trainee && isInitialized) {
+      loadProgress(user.employeeId);
+    }
+  }, [isAuthenticated, user, trainee, isInitialized, loadProgress]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
       navigate('/');
       return;
     }
-    loadModule();
-  }, [moduleId, trainee]);
+    // Only load module once we have trainee data or auth is confirmed
+    if (trainee || user) {
+      loadModule();
+    }
+  }, [moduleId, trainee, user, isAuthenticated, navigate]);
 
   const loadModule = async () => {
     try {

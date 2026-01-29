@@ -1,15 +1,36 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTraining } from '../context/TrainingContext';
+import { useAuth } from '../context/AuthContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 function ProgressPage() {
-  const { trainee, progress } = useTraining();
+  const { trainee, progress, isInitialized, loadProgress } = useTraining();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  if (!trainee || !progress) {
-    navigate('/');
+  // Load progress if we're authenticated but don't have trainee yet
+  useEffect(() => {
+    if (isAuthenticated && user && !trainee && isInitialized) {
+      loadProgress(user.employeeId);
+    }
+  }, [isAuthenticated, user, trainee, isInitialized, loadProgress]);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
+
+  if (!isAuthenticated) {
     return null;
+  }
+
+  if (!trainee || !progress) {
+    return <LoadingSpinner />;
   }
 
   const totalModules = 7; // From cart config
