@@ -21,7 +21,19 @@ This guide walks you through setting up Supabase as the database for the GG OJT 
 5. Click **Run** (or Cmd/Ctrl + Enter)
 6. You should see "Success. No rows returned" - this is correct!
 
-## 3. Get Your API Keys
+## 3. Set Up Storage Bucket
+
+1. In Supabase dashboard, go to **Storage**
+2. Click **New bucket**
+3. Configure the bucket:
+   - **Name**: `training-media`
+   - **Public bucket**: ✅ ON (required for video streaming)
+   - **File size limit**: `500MB`
+   - **Allowed MIME types**: `video/*, image/*`
+4. Click **Create bucket**
+5. Go to **SQL Editor** and run `supabase/storage-policies.sql` to set up access policies
+
+## 4. Get Your API Keys
 
 1. Go to **Settings** → **API**
 2. Copy these values:
@@ -30,7 +42,7 @@ This guide walks you through setting up Supabase as the database for the GG OJT 
 
 ⚠️ **Important**: Use the `service_role` key (not `anon` key) for server-side operations.
 
-## 4. Configure Railway
+## 5. Configure Railway
 
 Add these environment variables in Railway:
 
@@ -41,13 +53,14 @@ Add these environment variables in Railway:
 | `JWT_SECRET` | A random secure string |
 | `CLIENT_URL` | Your Vercel frontend URL |
 
-## 5. Verify Setup
+## 6. Verify Setup
 
 After redeploying, check the Railway logs. You should see:
 
 ```
 🔗 AuthService using Supabase
 🔗 ProgressTracker using Supabase
+🔗 StorageService using Supabase Storage
 ✅ Default admin user created (ID: admin)
 ```
 

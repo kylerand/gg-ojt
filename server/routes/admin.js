@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import ProgressTracker from '../services/ProgressTracker.js';
 import ModuleLoader from '../services/ModuleLoader.js';
+import StorageService from '../services/StorageService.js';
 import { AppError } from '../middleware/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,34 +13,9 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    const isVideo = file.mimetype.startsWith('video/');
-    const uploadDir = isVideo 
-      ? path.join(__dirname, '../../client/public/videos')
-      : path.join(__dirname, '../../client/public/images/modules');
-    
-    // Ensure directory exists
-    try {
-      await fs.mkdir(uploadDir, { recursive: true });
-    } catch (err) {
-      // Directory may already exist
-    }
-    
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    const baseName = path.basename(file.originalname, ext).replace(/\s+/g, '-').toLowerCase();
-    cb(null, `${baseName}-${uniqueSuffix}${ext}`);
-  }
-});
-
+// Configure multer for memory storage (to upload to Supabase)
 const upload = multer({ 
-  storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 500 * 1024 * 1024, // 500MB max
   },
@@ -156,55 +132,45 @@ router.post('/cache/clear', (req, res) => {
 // FILE UPLOAD ENDPOINTS
 // =====================================================
 
-// POST /api/admin/upload - Upload video or image
-router.post('/upload', upload.single('video') || upload.single('image'), (req, res, next) => {
+// POST /api/admin/upload - Upload video or image to Supabase Storage
+router.post('/upload', upload.any(), async (req, res, next) => {
   try {
-    if (!req.file) {
-      throw new AppError('No file uploaded', 400);
-    }
-
-    const isVideo = req.file.mimetype.startsWith('video/');
-    const publicPath = isVideo 
-      ? `/videos/${req.file.filename}`
-      : `/images/modules/${req.file.filename}`;
-
-    res.json({ 
-      success: true,
-      url: publicPath,
-      filename: req.file.filename,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-    });
-  } catch (error) {
-    next(new AppError(error.message, 500));
-  }
-});
-
-// Handle both video and image uploads
-router.post('/upload', (req, res, next) => {
-  upload.any()(req, res, (err) => {
-    if (err) {
-      return next(new AppError(err.message, 400));
-    }
-    
     if (!req.files || req.files.length === 0) {
-      return next(new AppError('No file uploaded', 400));
+      throw new AppError('No file uploaded', 400);
     }
 
     const file = req.files[0];
     const isVideo = file.mimetype.startsWith('video/');
-    const publicPath = isVideo 
-      ? `/videos/${file.filename}`
-      : `/images/modules/${file.filename}`;
+    
+    let result;
+    if (isVideo) {
+      result = await StorageService.uploadVideo(
+        file.buffer,
+        file.originalname,
+        file.mimetype
+      );
+    } else {
+      const imageType = req.body.type || 'images';
+      result = await StorageService.uploadImage(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        imageType
+      );
+    }
 
     res.json({ 
       success: true,
-      url: publicPath,
-      filename: file.filename,
+      url: result.url,
+      path: result.path,
+      filename: file.originalname,
       size: file.size,
       mimetype: file.mimetype,
     });
-  });
+  } catch (error) {
+    console.error('Upload error:', error);
+    next(new AppError(error.message, 500));
+  }
 });
 
 // =====================================================
