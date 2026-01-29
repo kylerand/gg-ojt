@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Button from '../common/Button';
 import ModuleEditor from './ModuleEditor';
+import { getModules, getModule, createModule, updateModule, deleteModule } from '../../services/api';
 
 const STORAGE_KEY = 'admin-module-management-state';
 
@@ -59,8 +60,8 @@ function ModuleManagement() {
 
   const fetchModules = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/modules');
-      const data = await response.json();
+      const response = await getModules();
+      const data = response.data;
       setModules(data);
       
       // Restore editing state if we had a pending module
@@ -69,9 +70,8 @@ function ModuleManagement() {
         if (moduleToEdit) {
           // Fetch full module data
           try {
-            const fullResponse = await fetch(`http://localhost:3001/api/modules/${window._pendingEditModuleId}`);
-            const fullData = await fullResponse.json();
-            setEditingModule(fullData);
+            const fullResponse = await getModule(window._pendingEditModuleId);
+            setEditingModule(fullResponse.data);
           } catch (e) {
             console.error('Failed to restore editing module:', e);
           }
@@ -88,18 +88,11 @@ function ModuleManagement() {
   const handleSaveModule = async (moduleData) => {
     try {
       const isNew = !editingModule;
-      const url = isNew 
-        ? 'http://localhost:3001/api/admin/modules'
-        : `http://localhost:3001/api/admin/modules/${moduleData.id}`;
       
-      const response = await fetch(url, {
-        method: isNew ? 'POST' : 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(moduleData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save module');
+      if (isNew) {
+        await createModule(moduleData);
+      } else {
+        await updateModule(moduleData.id, moduleData);
       }
 
       await fetchModules();
@@ -118,14 +111,7 @@ function ModuleManagement() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/modules/${moduleId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete module');
-      }
-
+      await deleteModule(moduleId);
       await fetchModules();
       setEditingModule(null);
     } catch (error) {
@@ -136,9 +122,8 @@ function ModuleManagement() {
 
   const handleEditModule = async (moduleId) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/modules/${moduleId}`);
-      const data = await response.json();
-      setEditingModule(data);
+      const response = await getModule(moduleId);
+      setEditingModule(response.data);
       saveState(moduleId, false, searchTerm); // Save that we're editing this module
     } catch (error) {
       console.error('Failed to fetch module:', error);

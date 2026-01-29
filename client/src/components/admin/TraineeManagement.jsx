@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Button from '../common/Button';
 import TraineeEditor from './TraineeEditor';
-import { getAdminTrainees, resetProgress as resetProgressAPI } from '../../services/api';
+import api, { getAdminTrainees, resetProgress as resetProgressAPI, getModules } from '../../services/api';
 
 function TraineeManagement() {
   const [trainees, setTrainees] = useState([]);
@@ -30,9 +30,8 @@ function TraineeManagement() {
 
   const loadModules = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/modules');
-      const data = await response.json();
-      setModules(data);
+      const response = await getModules();
+      setModules(response.data);
     } catch (error) {
       console.error('Failed to load modules:', error);
     }
@@ -299,9 +298,8 @@ function TraineeManagement() {
             loadTrainees();
             // Refresh selected trainee data
             if (selectedTrainee) {
-              fetch(`http://localhost:3001/api/admin/trainees/${selectedTrainee.traineeId}`)
-                .then(res => res.json())
-                .then(data => setSelectedTrainee(data))
+              api.get(`/admin/trainees/${selectedTrainee.traineeId}`)
+                .then(res => setSelectedTrainee(res.data))
                 .catch(console.error);
             }
           }}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Button from '../common/Button';
+import api from '../../services/api';
 
 function StepEditor({ step, onSave, onCancel, onDelete }) {
   const [formData, setFormData] = useState({
@@ -44,13 +45,11 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
     formDataUpload.append('video', file);
 
     try {
-      const response = await fetch('http://localhost:3001/api/admin/upload', {
-        method: 'POST',
-        body: formDataUpload,
+      const response = await api.post('/admin/upload', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      const data = await response.json();
-      if (data.url) {
-        handleChange('videoUrl', data.url);
+      if (response.data.url) {
+        handleChange('videoUrl', response.data.url);
       }
     } catch (error) {
       console.error('Failed to upload video:', error);

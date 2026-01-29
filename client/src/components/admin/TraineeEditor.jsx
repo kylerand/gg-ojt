@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Button from '../common/Button';
+import api from '../../services/api';
 
 // Predefined job roles for golf cart assembly
 const JOB_ROLES = [
@@ -78,13 +79,7 @@ function TraineeEditor({ trainee, modules, onSave, onClose }) {
     setIsSaving(true);
     setSaveMessage(null);
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/trainees/${trainee.traineeId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileData),
-      });
-      
-      if (!response.ok) throw new Error('Failed to save profile');
+      await api.put(`/admin/trainees/${trainee.traineeId}`, profileData);
       
       setSaveMessage({ type: 'success', text: 'Profile saved successfully!' });
       onSave?.();
@@ -108,13 +103,7 @@ function TraineeEditor({ trainee, modules, onSave, onClose }) {
     setIsSaving(true);
     setSaveMessage(null);
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/trainees/${trainee.traineeId}/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newPassword }),
-      });
-      
-      if (!response.ok) throw new Error('Failed to reset password');
+      await api.post(`/admin/trainees/${trainee.traineeId}/reset-password`, { newPassword });
       
       setSaveMessage({ type: 'success', text: 'Password reset successfully!' });
       setNewPassword('');
@@ -152,13 +141,7 @@ function TraineeEditor({ trainee, modules, onSave, onClose }) {
     setIsSaving(true);
     setSaveMessage(null);
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/trainees/${trainee.traineeId}/modules/${moduleId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProgress),
-      });
-      
-      if (!response.ok) throw new Error('Failed to update module progress');
+      await api.put(`/admin/trainees/${trainee.traineeId}/modules/${moduleId}`, updatedProgress);
       
       setModuleProgress(prev => ({
         ...prev,
@@ -193,13 +176,7 @@ function TraineeEditor({ trainee, modules, onSave, onClose }) {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/trainees/${trainee.traineeId}/modules/${moduleId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProgress),
-      });
-      
-      if (!response.ok) throw new Error('Failed to update step');
+      await api.put(`/admin/trainees/${trainee.traineeId}/modules/${moduleId}`, updatedProgress);
       
       setModuleProgress(prev => ({
         ...prev,
@@ -218,11 +195,7 @@ function TraineeEditor({ trainee, modules, onSave, onClose }) {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/trainees/${trainee.traineeId}/modules/${moduleId}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) throw new Error('Failed to reset module');
+      await api.delete(`/admin/trainees/${trainee.traineeId}/modules/${moduleId}`);
       
       setModuleProgress(prev => {
         const updated = { ...prev };
@@ -247,13 +220,7 @@ function TraineeEditor({ trainee, modules, onSave, onClose }) {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/trainees/${trainee.traineeId}/modules/${moduleId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProgress),
-      });
-      
-      if (!response.ok) throw new Error('Failed to update score');
+      await api.put(`/admin/trainees/${trainee.traineeId}/modules/${moduleId}`, updatedProgress);
       
       setModuleProgress(prev => ({
         ...prev,
@@ -740,17 +707,14 @@ function TraineeEditor({ trainee, modules, onSave, onClose }) {
                                   supervisorSignoff: e.target.checked,
                                   signoffAt: e.target.checked ? new Date().toISOString() : null,
                                 };
-                                fetch(`http://localhost:3001/api/admin/trainees/${trainee.traineeId}/modules/${module.id}`, {
-                                  method: 'PUT',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify(updatedProgress),
-                                }).then(() => {
-                                  setModuleProgress(prev => ({
-                                    ...prev,
-                                    [module.id]: updatedProgress,
-                                  }));
-                                  onSave?.();
-                                });
+                                api.put(`/admin/trainees/${trainee.traineeId}/modules/${module.id}`, updatedProgress)
+                                  .then(() => {
+                                    setModuleProgress(prev => ({
+                                      ...prev,
+                                      [module.id]: updatedProgress,
+                                    }));
+                                    onSave?.();
+                                  });
                               }}
                             />
                             <span>Supervisor Sign-off</span>

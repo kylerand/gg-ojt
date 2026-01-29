@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Button from '../common/Button';
 import StepEditor from './StepEditor';
 import KnowledgeCheckEditor from './KnowledgeCheckEditor';
+import api from '../../services/api';
 
 const DRAFT_STORAGE_KEY = 'admin-module-editor-draft';
 const AUTO_SAVE_DELAY = 2000; // Auto-save draft after 2 seconds of inactivity
@@ -155,13 +156,11 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
     formDataUpload.append('type', 'thumbnail');
 
     try {
-      const response = await fetch('http://localhost:3001/api/admin/upload', {
-        method: 'POST',
-        body: formDataUpload,
+      const response = await api.post('/admin/upload', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      const data = await response.json();
-      if (data.url) {
-        handleChange('thumbnailUrl', data.url);
+      if (response.data.url) {
+        handleChange('thumbnailUrl', response.data.url);
       }
     } catch (error) {
       console.error('Failed to upload thumbnail:', error);

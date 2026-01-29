@@ -74,4 +74,18 @@ export const getAdminTrainees = () => api.get('/admin/trainees');
 export const resetProgress = (traineeId) => api.delete(`/admin/progress/${traineeId}`);
 export const clearCache = () => api.post('/admin/cache/clear');
 
+// Admin - Modules
+export const createModule = (moduleData) => api.post('/admin/modules', moduleData);
+export const updateModule = (moduleId, moduleData) => api.put(`/admin/modules/${moduleId}`, moduleData);
+export const deleteModule = (moduleId) => api.delete(`/admin/modules/${moduleId}`);
+
+// Admin - Trainees
+export const updateTrainee = (traineeId, data) => api.put(`/admin/trainees/${traineeId}`, data);
+export const resetTraineePassword = (traineeId, newPassword) => 
+  api.post(`/admin/trainees/${traineeId}/reset-password`, { newPassword });
+export const setModuleProgress = (traineeId, moduleId, progressData) =>
+  api.put(`/admin/trainees/${traineeId}/modules/${moduleId}`, progressData);
+export const resetModuleProgress = (traineeId, moduleId) =>
+  api.delete(`/admin/trainees/${traineeId}/modules/${moduleId}`);
+
 export default api;
