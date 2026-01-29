@@ -1,54 +1,44 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { join } from 'path';
-import { config } from '../utils/config.js';
-import { readJSON, writeJSON, ensureDir } from '../storage/fileStorage.js';
-import { existsSync } from 'fs';
 import { supabase, isSupabaseConfigured } from './supabase.js';
-
-const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
 class AuthService {
   constructor() {
-    this.usersPath = config.usersPath;
     this.useSupabase = isSupabaseConfigured();
     if (this.useSupabase) {
-      console.log('🔗 AuthService using Supabase');
+      console.log('🔗 AuthService using Supabase Auth');
     } else {
-      console.log('📁 AuthService using file storage');
+      throw new Error('Supabase must be configured for authentication');
     }
   }
 
   async init() {
-    if (!this.useSupabase) {
-      await ensureDir(this.usersPath);
-    }
+    // No initialization needed for Supabase Auth
   }
 
   // ============================================
   // USER RETRIEVAL
   // ============================================
   async getUser(userId) {
-    if (this.useSupabase) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('employee_id', userId)
-        .single();
-      
-      if (error || !data) return null;
-      return this.mapFromDb(data);
-    } else {
-      try {
-        const filePath = join(this.usersPath, `${userId}.json`);
-        if (!existsSync(filePath)) return null;
-        return await readJSON(filePath);
-      } catch (error) {
-        return null;
-      }
-    }
+    // Get user profile from our users table
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('employee_id', userId)
+      .single();
+    
+    if (error || !data) return null;
+    return this.mapFromDb(data);
+  }
+
+  async getUserByAuthId(authId) {
+    // Get user by Supabase Auth ID
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('auth_id', authId)
+      .single();
+    
+    if (error || !data) return null;
+    return this.mapFromDb(data);
   }
 
   async getUserByEmployeeId(employeeId) {
@@ -59,118 +49,133 @@ class AuthService {
   // USER CREATION
   // ============================================
   async createUser(employeeId, password, userData = {}) {
-    await this.init();
-    
+    // Check if user already exists
     const existingUser = await this.getUser(employeeId);
     if (existingUser) {
       throw new Error('User already exists');
     }
 
-    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    // Create email for Supabase Auth (use provided email or generate one)
+    const email = userData.email || `${employeeId}@gg-ojt.local`;
 
-    if (this.useSupabase) {
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          employee_id: employeeId,
-          password_hash: passwordHash,
-          name: userData.name || '',
-          email: userData.email || '',
-          role: userData.role || 'trainee',
-          job_role: userData.jobRole || '',
-          department: userData.department || '',
-          hire_date: userData.hireDate || null,
-          certifications: userData.certifications || [],
-        })
-        .select()
-        .single();
-
-      if (error) throw new Error(error.message);
-      return this.mapFromDb(data, true);
-    } else {
-      const user = {
-        id: employeeId,
-        employeeId,
-        passwordHash,
+    // Create user in Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        employee_id: employeeId,
         name: userData.name || '',
-        email: userData.email || '',
-        role: userData.role || 'trainee',
-        jobRole: userData.jobRole || '',
-        department: userData.department || '',
-        hireDate: userData.hireDate || null,
-        certifications: userData.certifications || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLogin: null,
-        isActive: true,
-      };
+      },
+    });
 
-      const filePath = join(this.usersPath, `${employeeId}.json`);
-      await writeJSON(filePath, user);
-
-      const { passwordHash: _, ...safeUser } = user;
-      return safeUser;
+    if (authError) {
+      throw new Error(authError.message);
     }
+
+    // Create user profile in our users table
+    const { data, error } = await supabase
+      .from('users')
+      .insert({
+        employee_id: employeeId,
+        auth_id: authData.user.id,
+        name: userData.name || '',
+        email: email,
+        role: userData.role || 'trainee',
+        job_role: userData.jobRole || '',
+        department: userData.department || '',
+        hire_date: userData.hireDate || null,
+        certifications: userData.certifications || [],
+      })
+      .select()
+      .single();
+
+    if (error) {
+      // Clean up auth user if profile creation fails
+      await supabase.auth.admin.deleteUser(authData.user.id);
+      throw new Error(error.message);
+    }
+
+    return this.mapFromDb(data, true);
   }
 
   // ============================================
   // AUTHENTICATION
   // ============================================
-  async verifyPassword(plainPassword, hashedPassword) {
-    return await bcrypt.compare(plainPassword, hashedPassword);
-  }
-
   async login(employeeId, password) {
-    const user = await this.getUser(employeeId);
+    // Get user profile to find their email
+    const userProfile = await this.getUser(employeeId);
     
-    if (!user) {
+    if (!userProfile) {
       throw new Error('Invalid credentials');
     }
 
-    if (user.isActive === false) {
+    if (userProfile.isActive === false) {
       throw new Error('Account is disabled');
     }
 
-    const isValid = await this.verifyPassword(password, user.passwordHash);
-    if (!isValid) {
+    // Sign in with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: userProfile.email,
+      password,
+    });
+
+    if (authError) {
       throw new Error('Invalid credentials');
     }
 
     // Update last login
-    if (this.useSupabase) {
-      await supabase
-        .from('users')
-        .update({ last_login: new Date().toISOString() })
-        .eq('employee_id', employeeId);
-    } else {
-      user.lastLogin = new Date().toISOString();
-      const filePath = join(this.usersPath, `${employeeId}.json`);
-      await writeJSON(filePath, user);
-    }
+    await supabase
+      .from('users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('employee_id', employeeId);
 
-    const token = this.generateToken(user);
-    const { passwordHash: _, ...safeUser } = user;
-    return { user: safeUser, token };
+    // Return user data and Supabase access token
+    const safeUser = this.mapFromDb(userProfile, true);
+    return { 
+      user: safeUser, 
+      token: authData.session.access_token,
+      refreshToken: authData.session.refresh_token,
+    };
   }
 
-  generateToken(user) {
-    return jwt.sign(
-      {
-        id: user.id,
-        employeeId: user.employeeId,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
-  }
-
-  verifyToken(token) {
+  async verifyToken(token) {
     try {
-      return jwt.verify(token, JWT_SECRET);
+      // Verify the token with Supabase
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      
+      if (error || !user) {
+        return null;
+      }
+
+      // Get our user profile
+      const userProfile = await this.getUserByAuthId(user.id);
+      if (!userProfile) {
+        return null;
+      }
+
+      return {
+        id: userProfile.employeeId,
+        employeeId: userProfile.employeeId,
+        role: userProfile.role,
+        authId: user.id,
+      };
     } catch (error) {
       return null;
     }
+  }
+
+  async refreshSession(refreshToken) {
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
+    
+    if (error) {
+      throw new Error('Session refresh failed');
+    }
+
+    return {
+      token: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+    };
   }
 
   // ============================================
@@ -180,21 +185,24 @@ class AuthService {
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
 
-    const isValid = await this.verifyPassword(currentPassword, user.passwordHash);
-    if (!isValid) throw new Error('Current password is incorrect');
+    // Verify current password by attempting to sign in
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
 
-    const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    if (signInError) {
+      throw new Error('Current password is incorrect');
+    }
 
-    if (this.useSupabase) {
-      await supabase
-        .from('users')
-        .update({ password_hash: newHash })
-        .eq('employee_id', userId);
-    } else {
-      user.passwordHash = newHash;
-      user.updatedAt = new Date().toISOString();
-      const filePath = join(this.usersPath, `${userId}.json`);
-      await writeJSON(filePath, user);
+    // Update password using admin API
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      user.authId,
+      { password: newPassword }
+    );
+
+    if (updateError) {
+      throw new Error(updateError.message);
     }
 
     return { success: true, message: 'Password changed successfully' };
@@ -204,24 +212,21 @@ class AuthService {
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
 
-    const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    // Update password using admin API
+    const { error } = await supabase.auth.admin.updateUserById(
+      user.authId,
+      { password: newPassword }
+    );
 
-    if (this.useSupabase) {
-      await supabase
-        .from('users')
-        .update({ 
-          password_hash: newHash,
-          password_reset_at: new Date().toISOString(),
-        })
-        .eq('employee_id', userId);
-    } else {
-      user.passwordHash = newHash;
-      user.updatedAt = new Date().toISOString();
-      user.passwordResetAt = new Date().toISOString();
-      user.passwordResetByAdmin = true;
-      const filePath = join(this.usersPath, `${userId}.json`);
-      await writeJSON(filePath, user);
+    if (error) {
+      throw new Error(error.message);
     }
+
+    // Update our users table
+    await supabase
+      .from('users')
+      .update({ password_reset_at: new Date().toISOString() })
+      .eq('employee_id', userId);
 
     return { success: true, message: 'Password reset successfully' };
   }
@@ -233,87 +238,84 @@ class AuthService {
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
 
-    if (this.useSupabase) {
-      const dbUpdates = {};
-      if (updates.name !== undefined) dbUpdates.name = updates.name;
-      if (updates.email !== undefined) dbUpdates.email = updates.email;
-      if (updates.role !== undefined) dbUpdates.role = updates.role;
-      if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
-      if (updates.jobRole !== undefined) dbUpdates.job_role = updates.jobRole;
-      if (updates.department !== undefined) dbUpdates.department = updates.department;
-      if (updates.hireDate !== undefined) dbUpdates.hire_date = updates.hireDate;
-      if (updates.certifications !== undefined) dbUpdates.certifications = updates.certifications;
+    const dbUpdates = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.email !== undefined) dbUpdates.email = updates.email;
+    if (updates.role !== undefined) dbUpdates.role = updates.role;
+    if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+    if (updates.jobRole !== undefined) dbUpdates.job_role = updates.jobRole;
+    if (updates.department !== undefined) dbUpdates.department = updates.department;
+    if (updates.hireDate !== undefined) dbUpdates.hire_date = updates.hireDate;
+    if (updates.certifications !== undefined) dbUpdates.certifications = updates.certifications;
 
-      const { data, error } = await supabase
-        .from('users')
-        .update(dbUpdates)
-        .eq('employee_id', userId)
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from('users')
+      .update(dbUpdates)
+      .eq('employee_id', userId)
+      .select()
+      .single();
 
-      if (error) throw new Error(error.message);
-      return this.mapFromDb(data, true);
-    } else {
-      const allowedFields = ['name', 'email', 'role', 'isActive', 'jobRole', 'department', 'hireDate', 'certifications'];
-      for (const field of allowedFields) {
-        if (updates[field] !== undefined) {
-          user[field] = updates[field];
-        }
-      }
-      user.updatedAt = new Date().toISOString();
+    if (error) throw new Error(error.message);
 
-      const filePath = join(this.usersPath, `${userId}.json`);
-      await writeJSON(filePath, user);
-
-      const { passwordHash: _, ...safeUser } = user;
-      return safeUser;
+    // If email was updated, update it in Supabase Auth too
+    if (updates.email && user.authId) {
+      await supabase.auth.admin.updateUserById(user.authId, {
+        email: updates.email,
+      });
     }
+
+    return this.mapFromDb(data, true);
   }
 
   // ============================================
   // ADMIN FUNCTIONS
   // ============================================
   async getAllUsers() {
-    await this.init();
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    if (this.useSupabase) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return data.map(u => this.mapFromDb(u, true));
+  }
 
-      if (error) throw new Error(error.message);
-      return data.map(u => this.mapFromDb(u, true));
-    } else {
-      const fs = await import('fs/promises');
-      const files = await fs.readdir(this.usersPath);
-      const userFiles = files.filter(f => f.endsWith('.json'));
+  async deleteUser(userId) {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('User not found');
 
-      const users = await Promise.all(
-        userFiles.map(async (file) => {
-          const user = await readJSON(join(this.usersPath, file));
-          const { passwordHash: _, ...safeUser } = user;
-          return safeUser;
-        })
-      );
-
-      return users;
+    // Delete from Supabase Auth
+    if (user.authId) {
+      await supabase.auth.admin.deleteUser(user.authId);
     }
+
+    // Delete from our users table
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('employee_id', userId);
+
+    if (error) throw new Error(error.message);
+    return { success: true };
   }
 
   async ensureAdminExists() {
-    await this.init();
-    
     const adminId = process.env.ADMIN_ID || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
     
     const existingAdmin = await this.getUser(adminId);
     if (!existingAdmin) {
-      await this.createUser(adminId, adminPassword, {
-        name: 'Administrator',
-        role: 'admin',
-      });
-      console.log(`✅ Default admin user created (ID: ${adminId})`);
+      try {
+        await this.createUser(adminId, adminPassword, {
+          name: 'Administrator',
+          role: 'admin',
+          email: process.env.ADMIN_EMAIL || `${adminId}@gg-ojt.local`,
+        });
+        console.log(`✅ Default admin user created (ID: ${adminId})`);
+      } catch (error) {
+        // Admin may already exist in Supabase Auth
+        console.log(`ℹ️ Admin user may already exist: ${error.message}`);
+      }
     }
   }
 
@@ -324,7 +326,7 @@ class AuthService {
     const user = {
       id: dbUser.employee_id,
       employeeId: dbUser.employee_id,
-      passwordHash: dbUser.password_hash,
+      authId: dbUser.auth_id,
       name: dbUser.name || '',
       email: dbUser.email || '',
       role: dbUser.role || 'trainee',
@@ -338,11 +340,17 @@ class AuthService {
       isActive: dbUser.is_active !== false,
     };
 
-    if (excludePassword) {
-      const { passwordHash: _, ...safeUser } = user;
-      return safeUser;
-    }
     return user;
+  }
+
+  async signOut(token) {
+    // Sign out from Supabase (invalidate the session)
+    try {
+      await supabase.auth.admin.signOut(token);
+    } catch (error) {
+      // Ignore sign out errors
+    }
+    return { success: true };
   }
 }
 

@@ -1,7 +1,7 @@
 import AuthService from '../services/AuthService.js';
 import { AppError } from './errorHandler.js';
 
-// Middleware to verify JWT token
+// Middleware to verify Supabase JWT token
 export const authenticateToken = async (req, res, next) => {
   try {
     // Get token from Authorization header or cookie
@@ -18,7 +18,8 @@ export const authenticateToken = async (req, res, next) => {
       throw new AppError('Authentication required', 401);
     }
 
-    const decoded = AuthService.verifyToken(token);
+    // Verify token with Supabase (async)
+    const decoded = await AuthService.verifyToken(token);
     if (!decoded) {
       throw new AppError('Invalid or expired token', 401);
     }
@@ -76,7 +77,7 @@ export const optionalAuth = async (req, res, next) => {
     }
 
     if (token) {
-      const decoded = AuthService.verifyToken(token);
+      const decoded = await AuthService.verifyToken(token);
       if (decoded) {
         req.user = decoded;
       }

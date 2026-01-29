@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 // Use environment variable, or production URL if in production, or localhost for dev
 const getApiUrl = () => {
@@ -20,8 +20,38 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('authToken'));
+  const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('refreshToken'));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const refreshTimeoutRef = useRef(null);
+
+  // Refresh the access token
+  const refreshAccessToken = useCallback(async () => {
+    const savedRefreshToken = localStorage.getItem('refreshToken');
+    if (!savedRefreshToken) return false;
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken: savedRefreshToken }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setToken(data.token);
+        setRefreshToken(data.refreshToken);
+        return true;
+      }
+    } catch (err) {
+      console.error('Token refresh failed:', err);
+    }
+    return false;
+  }, []);
 
   // Check if user is authenticated on mount
   useEffect(() => {
@@ -43,16 +73,43 @@ export function AuthProvider({ children }) {
           const data = await response.json();
           setUser(data.user);
           setToken(savedToken);
+        } else if (response.status === 401) {
+          // Token expired, try to refresh
+          const refreshed = await refreshAccessToken();
+          if (refreshed) {
+            // Retry with new token
+            const newToken = localStorage.getItem('authToken');
+            const retryResponse = await fetch(`${API_URL}/api/auth/me`, {
+              headers: {
+                'Authorization': `Bearer ${newToken}`,
+              },
+            });
+            if (retryResponse.ok) {
+              const data = await retryResponse.json();
+              setUser(data.user);
+              return;
+            }
+          }
+          // Refresh failed, clear auth
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('refreshToken');
+          setToken(null);
+          setRefreshToken(null);
+          setUser(null);
         } else {
           // Token is invalid, clear it
           localStorage.removeItem('authToken');
+          localStorage.removeItem('refreshToken');
           setToken(null);
+          setRefreshToken(null);
           setUser(null);
         }
       } catch (err) {
         console.error('Auth verification failed:', err);
         localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
         setToken(null);
+        setRefreshToken(null);
         setUser(null);
       } finally {
         setLoading(false);
@@ -60,7 +117,7 @@ export function AuthProvider({ children }) {
     };
 
     verifyAuth();
-  }, []);
+  }, [refreshAccessToken]);
 
   // Login function
   const login = useCallback(async (employeeId, password) => {
@@ -81,6 +138,10 @@ export function AuthProvider({ children }) {
       }
 
       localStorage.setItem('authToken', data.token);
+      if (data.refreshToken) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setRefreshToken(data.refreshToken);
+      }
       setToken(data.token);
       setUser(data.user);
 
@@ -110,6 +171,10 @@ export function AuthProvider({ children }) {
       }
 
       localStorage.setItem('authToken', data.token);
+      if (data.refreshToken) {
+        localStorage.setItem('refreshToken', data.refreshToken);
+        setRefreshToken(data.refreshToken);
+      }
       setToken(data.token);
       setUser(data.user);
 
@@ -122,6 +187,11 @@ export function AuthProvider({ children }) {
 
   // Logout function
   const logout = useCallback(async () => {
+    // Clear refresh timeout
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+
     try {
       await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
@@ -134,9 +204,11 @@ export function AuthProvider({ children }) {
     }
 
     localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('trainee-session');
     localStorage.removeItem('training-position');
     setToken(null);
+    setRefreshToken(null);
     setUser(null);
   }, [token]);
 

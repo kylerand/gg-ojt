@@ -171,4 +171,24 @@ router.post('/verify', authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
 
+// POST /api/auth/refresh - Refresh access token
+router.post('/refresh', async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      throw new AppError('Refresh token is required', 400);
+    }
+
+    const tokens = await AuthService.refreshSession(refreshToken);
+    res.json({
+      success: true,
+      token: tokens.token,
+      refreshToken: tokens.refreshToken,
+    });
+  } catch (error) {
+    next(new AppError('Session refresh failed', 401));
+  }
+});
+
 export default router;
