@@ -2446,6 +2446,7 @@ body {
   background: var(--bg-color);
   border-radius: 0.5rem;
   border: 1px solid var(--border-color);
+  overflow: hidden;
 }
 
 .module-admin-order {
@@ -2489,30 +2490,75 @@ body {
 .module-admin-info {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .module-admin-info h4 {
   margin: 0 0 0.25rem;
   font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .module-admin-id {
   font-size: 0.75rem;
   color: var(--text-secondary);
   margin-bottom: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .module-admin-meta {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
   font-size: 0.75rem;
   color: var(--text-secondary);
+}
+
+.module-admin-meta span {
+  white-space: nowrap;
 }
 
 .module-admin-actions {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+/* Module admin list responsive */
+@media (max-width: 768px) {
+  .module-admin-item {
+    flex-wrap: wrap;
+  }
+
+  .module-admin-order {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .module-admin-thumbnail {
+    width: 60px;
+    height: 45px;
+  }
+
+  .module-admin-info {
+    flex-basis: calc(100% - 110px);
+    order: 0;
+  }
+
+  .module-admin-actions {
+    width: 100%;
+    margin-top: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .module-admin-meta {
+    gap: 0.25rem 0.75rem;
+  }
 }
 
 /* Module Editor */
