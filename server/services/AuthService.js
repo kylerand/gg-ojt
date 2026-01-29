@@ -6,7 +6,8 @@ class AuthService {
     if (this.useSupabase) {
       console.log('🔗 AuthService using Supabase Auth');
     } else {
-      throw new Error('Supabase must be configured for authentication');
+      console.error('❌ Supabase must be configured for authentication');
+      console.error('   Set SUPABASE_URL and SUPABASE_SERVICE_KEY in your .env file');
     }
   }
 
@@ -14,10 +15,17 @@ class AuthService {
     // No initialization needed for Supabase Auth
   }
 
+  _ensureSupabase() {
+    if (!this.useSupabase) {
+      throw new Error('Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables.');
+    }
+  }
+
   // ============================================
   // USER RETRIEVAL
   // ============================================
   async getUser(userId) {
+    this._ensureSupabase();
     // Get user profile from our users table
     const { data, error } = await supabase
       .from('users')
@@ -30,6 +38,7 @@ class AuthService {
   }
 
   async getUserByAuthId(authId) {
+    this._ensureSupabase();
     // Get user by Supabase Auth ID
     const { data, error } = await supabase
       .from('users')
@@ -49,6 +58,7 @@ class AuthService {
   // USER CREATION
   // ============================================
   async createUser(employeeId, password, userData = {}) {
+    this._ensureSupabase();
     // Check if user already exists
     const existingUser = await this.getUser(employeeId);
     if (existingUser) {
@@ -103,6 +113,7 @@ class AuthService {
   // AUTHENTICATION
   // ============================================
   async login(employeeId, password) {
+    this._ensureSupabase();
     // Get user profile to find their email
     const userProfile = await this.getUser(employeeId);
     
@@ -140,6 +151,7 @@ class AuthService {
   }
 
   async verifyToken(token) {
+    if (!this.useSupabase) return null;
     try {
       // Verify the token with Supabase
       const { data: { user }, error } = await supabase.auth.getUser(token);
@@ -166,6 +178,7 @@ class AuthService {
   }
 
   async refreshSession(refreshToken) {
+    this._ensureSupabase();
     const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
     
     if (error) {
@@ -182,6 +195,7 @@ class AuthService {
   // PASSWORD MANAGEMENT
   // ============================================
   async changePassword(userId, currentPassword, newPassword) {
+    this._ensureSupabase();
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
 
@@ -209,6 +223,7 @@ class AuthService {
   }
 
   async resetPassword(userId, newPassword) {
+    this._ensureSupabase();
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
 
@@ -235,6 +250,7 @@ class AuthService {
   // USER UPDATES
   // ============================================
   async updateUser(userId, updates) {
+    this._ensureSupabase();
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
 
@@ -271,6 +287,7 @@ class AuthService {
   // ADMIN FUNCTIONS
   // ============================================
   async getAllUsers() {
+    this._ensureSupabase();
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -281,6 +298,7 @@ class AuthService {
   }
 
   async deleteUser(userId) {
+    this._ensureSupabase();
     const user = await this.getUser(userId);
     if (!user) throw new Error('User not found');
 
@@ -300,22 +318,63 @@ class AuthService {
   }
 
   async ensureAdminExists() {
+    if (!this.useSupabase) {
+      console.log('⚠️ Skipping admin creation - Supabase not configured');
+      return;
+    }
+    
     const adminId = process.env.ADMIN_ID || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminEmail = process.env.ADMIN_EMAIL || `${adminId}@gg-ojt.local`;
     
     const existingAdmin = await this.getUser(adminId);
+    
     if (!existingAdmin) {
+      // No admin user at all, create from scratch
       try {
         await this.createUser(adminId, adminPassword, {
           name: 'Administrator',
           role: 'admin',
-          email: process.env.ADMIN_EMAIL || `${adminId}@gg-ojt.local`,
+          email: adminEmail,
         });
         console.log(`✅ Default admin user created (ID: ${adminId})`);
       } catch (error) {
-        // Admin may already exist in Supabase Auth
-        console.log(`ℹ️ Admin user may already exist: ${error.message}`);
+        console.log(`ℹ️ Admin user creation failed: ${error.message}`);
       }
+    } else if (!existingAdmin.authId) {
+      // Admin exists in users table but not in Supabase Auth (pre-migration user)
+      console.log(`🔄 Migrating existing admin to Supabase Auth...`);
+      try {
+        // Create user in Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email: existingAdmin.email || adminEmail,
+          password: adminPassword,
+          email_confirm: true,
+          user_metadata: {
+            employee_id: adminId,
+            name: existingAdmin.name || 'Administrator',
+          },
+        });
+
+        if (authError) {
+          throw new Error(authError.message);
+        }
+
+        // Link the auth user to the existing profile
+        await supabase
+          .from('users')
+          .update({ 
+            auth_id: authData.user.id,
+            email: existingAdmin.email || adminEmail,
+          })
+          .eq('employee_id', adminId);
+
+        console.log(`✅ Admin user migrated to Supabase Auth (ID: ${adminId})`);
+      } catch (error) {
+        console.log(`⚠️ Admin migration failed: ${error.message}`);
+      }
+    } else {
+      console.log(`✅ Admin user already exists in Supabase Auth`);
     }
   }
 

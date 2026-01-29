@@ -6,21 +6,22 @@ import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
-// Import routes
-import modulesRouter from './routes/modules.js';
-import progressRouter from './routes/progress.js';
-import traineesRouter from './routes/trainees.js';
-import adminRouter from './routes/admin.js';
-import authRouter from './routes/auth.js';
+// Load environment variables FIRST before any other imports that need them
+dotenv.config({ path: join(dirname(dirname(fileURLToPath(import.meta.url))), '.env') });
+
+// Import routes (these may depend on env vars)
+const { default: modulesRouter } = await import('./routes/modules.js');
+const { default: progressRouter } = await import('./routes/progress.js');
+const { default: traineesRouter } = await import('./routes/trainees.js');
+const { default: adminRouter } = await import('./routes/admin.js');
+const { default: authRouter } = await import('./routes/auth.js');
 
 // Import middleware
-import { errorHandler } from './middleware/errorHandler.js';
-import { logger } from './middleware/logger.js';
+const { errorHandler } = await import('./middleware/errorHandler.js');
+const { logger } = await import('./middleware/logger.js');
 
 // Import services
-import AuthService from './services/AuthService.js';
-
-dotenv.config({ path: join(dirname(dirname(fileURLToPath(import.meta.url))), '.env') });
+const { default: AuthService } = await import('./services/AuthService.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
