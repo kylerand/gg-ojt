@@ -19,20 +19,20 @@ function Header() {
       <div className="header-content">
         <Link to="/home" className="logo">
           <img src="/images/GG_circle_grill_full_color-01.png" alt="Golfin Garage" className="logo-image" />
-          <span>Golfin Garage Training</span>
+          <span className="logo-text">Golfin Garage Training</span>
         </Link>
         {isAuthenticated && (
           <nav className="header-nav">
             <span className="header-welcome">Welcome, {displayName}</span>
-            <Link to="/progress" className="header-btn header-btn-progress">
-              📊 My Progress
+            <Link to="/progress" className="header-btn btn-outline">
+              📊 <span className="btn-label">Progress</span>
             </Link>
             {isAdmin && (
-              <Link to="/admin" className="header-btn header-btn-admin">
-                ⚙️ Admin
+              <Link to="/admin" className="header-btn btn-outline">
+                ⚙️ <span className="btn-label">Admin</span>
               </Link>
             )}
-            <button onClick={handleLogout} className="header-btn header-btn-logout">
+            <button onClick={handleLogout} className="header-btn btn-logout">
               Logout
             </button>
           </nav>
