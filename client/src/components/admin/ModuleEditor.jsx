@@ -37,6 +37,7 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
   const [editingStepIndex, setEditingStepIndex] = useState(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
   const autoSaveTimeoutRef = useRef(null);
@@ -182,6 +183,32 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
     } catch (error) {
       console.error('Failed to upload thumbnail:', error);
       alert('Failed to upload thumbnail');
+    }
+  };
+
+  // Generate thumbnail using AI
+  const handleGenerateThumbnail = async () => {
+    if (!formData.title) {
+      alert('Please enter a module title first');
+      return;
+    }
+
+    setIsGeneratingThumbnail(true);
+    try {
+      const response = await api.post('/admin/generate-thumbnail', {
+        title: formData.title,
+        description: formData.description,
+      });
+      
+      if (response.data.url) {
+        handleChange('thumbnailUrl', response.data.url);
+      }
+    } catch (error) {
+      console.error('Failed to generate thumbnail:', error);
+      const message = error.response?.data?.message || 'Failed to generate thumbnail';
+      alert(message);
+    } finally {
+      setIsGeneratingThumbnail(false);
     }
   };
 
@@ -429,17 +456,33 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
                 />
               )}
               <div className="thumbnail-controls">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleThumbnailUpload}
-                  id="thumbnail-upload"
-                  style={{ display: 'none' }}
-                />
-                <label htmlFor="thumbnail-upload" className="btn btn-outline">
-                  📷 Upload Image
-                </label>
-                <span className="form-help">Or enter URL:</span>
+                <div className="thumbnail-buttons">
+                  <Button
+                    variant="primary"
+                    onClick={handleGenerateThumbnail}
+                    disabled={isGeneratingThumbnail || !formData.title}
+                  >
+                    {isGeneratingThumbnail ? (
+                      <>
+                        <span className="spinner-small"></span>
+                        Generating...
+                      </>
+                    ) : (
+                      '✨ Generate with AI'
+                    )}
+                  </Button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailUpload}
+                    id="thumbnail-upload"
+                    style={{ display: 'none' }}
+                  />
+                  <label htmlFor="thumbnail-upload" className="btn btn-outline">
+                    📷 Upload Image
+                  </label>
+                </div>
+                <span className="form-help">Or enter URL manually:</span>
                 <input
                   type="text"
                   className="form-input"

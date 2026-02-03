@@ -129,6 +129,97 @@ router.post('/cache/clear', (req, res) => {
 });
 
 // =====================================================
+// AI IMAGE GENERATION ENDPOINTS
+// =====================================================
+
+// POST /api/admin/generate-thumbnail - Generate module thumbnail using AI
+router.post('/generate-thumbnail', async (req, res, next) => {
+  try {
+    const { title, description } = req.body;
+
+    if (!title) {
+      throw new AppError('Module title is required', 400);
+    }
+
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+    if (!OPENAI_API_KEY) {
+      throw new AppError('AI image generation is not configured. Set OPENAI_API_KEY.', 503);
+    }
+
+    // Create a prompt for the image
+    const prompt = `Professional training module thumbnail for "${title}". ${description ? description.substring(0, 200) : ''} Clean, modern design with industrial/technical aesthetic. High quality, professional looking, suitable for corporate training. No text in the image.`;
+
+    console.log('🎨 Generating thumbnail for:', title);
+
+    // Call OpenAI DALL-E API
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard',
+        response_format: 'url',
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('OpenAI API error:', error);
+      throw new AppError(`Image generation failed: ${error.error?.message || 'Unknown error'}`, 500);
+    }
+
+    const data = await response.json();
+    const imageUrl = data.data[0]?.url;
+
+    if (!imageUrl) {
+      throw new AppError('No image URL returned from AI', 500);
+    }
+
+    console.log('🖼️ Image generated, downloading...');
+
+    // Download the generated image
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new AppError('Failed to download generated image', 500);
+    }
+
+    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+
+    // Generate a filename
+    const sanitizedTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 50);
+    const filename = `${sanitizedTitle}-${Date.now()}.png`;
+
+    console.log('📤 Uploading to storage...');
+
+    // Upload to storage
+    const result = await StorageService.uploadImage(
+      imageBuffer,
+      filename,
+      'image/png',
+      'thumbnail'
+    );
+
+    console.log('✅ Thumbnail generated and uploaded:', result.url);
+
+    res.json({
+      success: true,
+      url: result.url,
+      path: result.path,
+      generated: true,
+    });
+  } catch (error) {
+    console.error('Thumbnail generation error:', error);
+    next(error instanceof AppError ? error : new AppError(error.message, 500));
+  }
+});
+
+// =====================================================
 // FILE UPLOAD ENDPOINTS
 // =====================================================
 
