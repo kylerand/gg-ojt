@@ -47,5 +47,28 @@ CREATE POLICY "Anyone can read active modules" ON modules
   FOR SELECT
   USING (is_active = true);
 
+-- Policy: Allow all operations for authenticated users (admin backend)
+CREATE POLICY "Allow insert for authenticated" ON modules
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Allow update for authenticated" ON modules
+  FOR UPDATE
+  TO authenticated
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow delete for authenticated" ON modules
+  FOR DELETE
+  TO authenticated
+  USING (true);
+
+-- IMPORTANT: Grant full access to service_role (backend uses this)
+-- Service role should bypass RLS, but explicitly grant just in case
+GRANT ALL ON modules TO service_role;
+GRANT ALL ON modules TO anon;
+GRANT ALL ON modules TO authenticated;
+
 -- Policy: Service role can do everything (for backend)
 -- Note: Service role bypasses RLS by default
