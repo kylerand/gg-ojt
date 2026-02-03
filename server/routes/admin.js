@@ -1,15 +1,9 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs/promises';
 import ProgressTracker from '../services/ProgressTracker.js';
 import ModuleLoader from '../services/ModuleLoader.js';
 import StorageService from '../services/StorageService.js';
 import { AppError } from '../middleware/errorHandler.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
@@ -278,17 +272,13 @@ router.post('/modules', async (req, res, next) => {
     }
 
     // Check if module already exists
-    const existingModules = await ModuleLoader.getAllModules();
-    if (existingModules.some(m => m.id === moduleData.id)) {
+    const exists = await ModuleLoader.moduleExists(moduleData.id);
+    if (exists) {
       throw new AppError('Module with this ID already exists', 409);
     }
 
-    // Save module to file
-    const modulePath = path.join(__dirname, '../../data/modules', `${moduleData.id}.json`);
-    await fs.writeFile(modulePath, JSON.stringify(moduleData, null, 2));
-
-    // Clear cache to reload modules
-    ModuleLoader.clearCache();
+    // Save module using ModuleLoader (supports Supabase)
+    await ModuleLoader.saveModule(moduleData);
 
     res.status(201).json({ success: true, module: moduleData });
   } catch (error) {
@@ -310,18 +300,13 @@ router.put('/modules/:id', async (req, res, next) => {
     moduleData.id = id;
 
     // Check if module exists
-    const modulePath = path.join(__dirname, '../../data/modules', `${id}.json`);
-    try {
-      await fs.access(modulePath);
-    } catch {
+    const exists = await ModuleLoader.moduleExists(id);
+    if (!exists) {
       throw new AppError('Module not found', 404);
     }
 
-    // Save updated module
-    await fs.writeFile(modulePath, JSON.stringify(moduleData, null, 2));
-
-    // Clear cache to reload modules
-    ModuleLoader.clearCache();
+    // Save updated module using ModuleLoader (supports Supabase)
+    await ModuleLoader.saveModule(moduleData);
 
     res.json({ success: true, module: moduleData });
   } catch (error) {
@@ -334,18 +319,14 @@ router.delete('/modules/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
     
-    const modulePath = path.join(__dirname, '../../data/modules', `${id}.json`);
-    
-    try {
-      await fs.access(modulePath);
-    } catch {
+    // Check if module exists
+    const exists = await ModuleLoader.moduleExists(id);
+    if (!exists) {
       throw new AppError('Module not found', 404);
     }
 
-    await fs.unlink(modulePath);
-
-    // Clear cache to reload modules
-    ModuleLoader.clearCache();
+    // Delete module using ModuleLoader (supports Supabase)
+    await ModuleLoader.deleteModule(id);
 
     res.json({ success: true, message: 'Module deleted successfully' });
   } catch (error) {
@@ -366,6 +347,28 @@ router.get('/modules/:id', async (req, res, next) => {
     res.json(module);
   } catch (error) {
     next(new AppError(error.message, error.statusCode || 500));
+  }
+});
+
+// POST /api/admin/modules/sync - Sync modules from files to database
+router.post('/modules/sync', async (req, res, next) => {
+  try {
+    const { force } = req.body;
+    
+    let result;
+    if (force) {
+      result = await ModuleLoader.forceSyncModulesToSupabase();
+    } else {
+      result = await ModuleLoader.syncModulesToSupabase();
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Modules synced to database',
+      ...result 
+    });
+  } catch (error) {
+    next(new AppError(error.message, 500));
   }
 });
 
