@@ -6,6 +6,7 @@
   "thumbnailUrl": "/images/modules/drivetrain.png",
   "prerequisites": ["01-orientation", "02-frame-chassis", "03-electrical"],
   "requiresSupervisorSignoff": false,
+  "jobRoles": ["Assembly Technician", "Lead Assembly Technician"],
   "steps": [
     {
       "id": "step-1",

@@ -6,6 +6,7 @@
   "thumbnailUrl": "/images/modules/steering-suspension.png",
   "prerequisites": ["01-orientation", "02-frame-chassis"],
   "requiresSupervisorSignoff": false,
+  "jobRoles": ["Assembly Technician", "Lead Assembly Technician"],
   "steps": [
     {
       "id": "step-1",

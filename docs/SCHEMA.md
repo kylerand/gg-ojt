@@ -15,9 +15,31 @@ File location: `data/modules/*.json`
   "thumbnailUrl": string,                // URL to module thumbnail image
   "prerequisites": string[],             // Array of required module IDs
   "requiresSupervisorSignoff": boolean,  // Does this module need supervisor approval?
+  "jobRoles": string[],                  // Array of job roles that should see this module
+                                         // Empty array = visible to all roles
   "steps": Step[],                       // Array of training steps
   "knowledgeChecks": KnowledgeCheck[]    // Array of quiz questions
 }
+```
+
+### Job Roles
+
+Modules can be targeted to specific job roles. If `jobRoles` is empty or not specified, the module is visible to all users.
+
+Available job roles:
+- `Assembly Technician`
+- `Lead Assembly Technician`
+- `Quality Inspector`
+- `Electrical Specialist`
+- `Frame & Chassis Specialist`
+- `Paint & Body Technician`
+- `Sales`
+- `Supervisor`
+- `Trainer`
+- `Maintenance Technician`
+- `Warehouse Associate`
+
+**Note**: Admins and Supervisors always see all modules regardless of their job role setting.
 ```
 
 ## Step Schema

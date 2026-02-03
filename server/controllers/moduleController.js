@@ -1,9 +1,27 @@
 import ModuleLoader from '../services/ModuleLoader.js';
+import AuthService from '../services/AuthService.js';
 import { AppError } from '../middleware/errorHandler.js';
 
 export const getAllModules = async (req, res, next) => {
   try {
-    const modules = await ModuleLoader.getModuleList();
+    let jobRole = null;
+    let userRole = null;
+
+    // If user is authenticated, get their job role
+    if (req.user) {
+      try {
+        const user = await AuthService.getUser(req.user.id);
+        if (user) {
+          jobRole = user.jobRole;
+          userRole = user.role;
+        }
+      } catch (error) {
+        // If we can't get user info, just return all modules
+        console.warn('Could not get user info for module filtering:', error.message);
+      }
+    }
+
+    const modules = await ModuleLoader.getModuleList(jobRole, userRole);
     res.json(modules);
   } catch (error) {
     next(new AppError(error.message, 500));

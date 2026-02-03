@@ -10,6 +10,7 @@ const JOB_ROLES = [
   'Electrical Specialist',
   'Frame & Chassis Specialist',
   'Paint & Body Technician',
+  'Sales',
   'Supervisor',
   'Trainer',
   'Maintenance Technician',

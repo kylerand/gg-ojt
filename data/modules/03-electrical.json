@@ -6,6 +6,7 @@
   "thumbnailUrl": "/images/modules/electrical.png",
   "prerequisites": ["01-orientation", "02-frame-chassis"],
   "requiresSupervisorSignoff": true,
+  "jobRoles": ["Assembly Technician", "Lead Assembly Technician", "Electrical Specialist"],
   "steps": [
     {
       "id": "step-1",

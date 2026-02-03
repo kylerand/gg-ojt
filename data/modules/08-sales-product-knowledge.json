@@ -1,0 +1,129 @@
+{
+  "id": "08-sales-product-knowledge",
+  "title": "Sales: Product Knowledge",
+  "description": "Learn about golf cart features, specifications, customization options, and how to effectively communicate value to customers.",
+  "estimatedTime": "60 minutes",
+  "thumbnailUrl": "/images/modules/sales-product.png",
+  "prerequisites": ["01-orientation"],
+  "requiresSupervisorSignoff": false,
+  "jobRoles": ["Sales"],
+  "steps": [
+    {
+      "id": "step-1",
+      "title": "Golf Cart Product Lines",
+      "instructions": "Welcome to the Sales Product Knowledge training! In this module, you'll learn about our complete golf cart lineup, including:\n\n• Standard Electric Carts\n• Premium Electric Carts\n• Utility Vehicles\n• Custom Builds\n\nUnderstanding the differences between models will help you match customers with the right cart for their needs.",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Product+Lines",
+      "videoDuration": 300,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Products",
+      "tools": [],
+      "materials": ["Product catalog", "Feature comparison chart"],
+      "safetyWarnings": [],
+      "commonMistakes": [
+        "Not asking about the customer's primary use case",
+        "Focusing only on price instead of value",
+        "Forgetting to mention warranty and service options"
+      ],
+      "whyItMatters": "Customers trust salespeople who understand the product. Your knowledge helps them make confident purchasing decisions.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    },
+    {
+      "id": "step-2",
+      "title": "Electric vs Gas: Key Differences",
+      "instructions": "Understanding the differences between electric and gas carts is essential for helping customers choose:\n\n**Electric Carts:**\n• Lower operating costs\n• Quieter operation\n• Zero emissions\n• Less maintenance\n• Best for: Golf courses, gated communities, indoor use\n\n**Gas Carts:**\n• Longer range\n• Faster refueling\n• More power for hills\n• Best for: Hunting, farming, long-distance use",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Electric+vs+Gas",
+      "videoDuration": 240,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Comparison",
+      "tools": [],
+      "materials": [],
+      "safetyWarnings": [],
+      "commonMistakes": [
+        "Pushing electric when gas is clearly a better fit",
+        "Not explaining total cost of ownership",
+        "Ignoring the customer's terrain and use environment"
+      ],
+      "whyItMatters": "Matching the right cart type to the customer's needs prevents returns and builds long-term customer relationships.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": false
+    },
+    {
+      "id": "step-3",
+      "title": "Customization Options",
+      "instructions": "Our carts can be customized in many ways:\n\n**Performance:**\n• High-speed motors\n• Lifted suspensions\n• All-terrain tires\n\n**Comfort:**\n• Premium seats\n• Weather enclosures\n• Sound systems\n\n**Utility:**\n• Cargo beds\n• Tow hitches\n• Brush guards\n\n**Aesthetics:**\n• Custom paint\n• Wheel packages\n• LED lighting",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Customization",
+      "videoDuration": 300,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Custom",
+      "tools": [],
+      "materials": ["Customization brochure", "Pricing sheet"],
+      "safetyWarnings": [],
+      "commonMistakes": [
+        "Not showing visual examples of customizations",
+        "Forgetting to explain lead times for custom orders",
+        "Missing upsell opportunities"
+      ],
+      "whyItMatters": "Customizations increase average order value and create unique products that customers love to show off.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": false
+    },
+    {
+      "id": "step-4",
+      "title": "Warranty & Service",
+      "instructions": "Every cart comes with comprehensive coverage:\n\n**Standard Warranty:**\n• 2-year bumper-to-bumper\n• 5-year battery warranty (electric)\n• 3-year drivetrain (gas)\n\n**Extended Options:**\n• Extended warranty packages\n• Prepaid maintenance plans\n• Roadside assistance\n\n**Service Network:**\n• On-site service available\n• Factory-trained technicians\n• Genuine parts guaranteed",
+      "videoUrl": "https://via.placeholder.com/800x600?text=Warranty+Service",
+      "videoDuration": 180,
+      "videoThumbnail": "https://via.placeholder.com/400x300?text=Warranty",
+      "tools": [],
+      "materials": ["Warranty guide", "Service plan comparison"],
+      "safetyWarnings": [],
+      "commonMistakes": [
+        "Not emphasizing warranty as a value-add",
+        "Failing to offer extended coverage at point of sale",
+        "Not explaining what's covered vs. not covered"
+      ],
+      "whyItMatters": "Strong warranty coverage builds trust and differentiates us from competitors.",
+      "requiresConfirmation": true,
+      "requiresVideoCompletion": true
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "check-1",
+      "question": "Which type of cart is best for indoor use?",
+      "type": "multiple-choice",
+      "options": [
+        "Gas cart",
+        "Electric cart",
+        "Either works equally well",
+        "Neither is suitable"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Electric carts are ideal for indoor use because they produce zero emissions and operate quietly."
+    },
+    {
+      "id": "check-2",
+      "question": "What is included in the standard warranty for electric carts?",
+      "type": "multiple-choice",
+      "options": [
+        "1-year battery warranty",
+        "5-year battery warranty",
+        "Lifetime battery warranty",
+        "No battery coverage"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Electric carts come with a 5-year battery warranty as part of the standard coverage."
+    },
+    {
+      "id": "check-3",
+      "question": "When should you recommend a gas cart over electric?",
+      "type": "multiple-choice",
+      "options": [
+        "For golf course use",
+        "For gated communities",
+        "For hunting and long-distance off-road use",
+        "For indoor warehouse use"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Gas carts are better for hunting and long-distance use because they have longer range and faster refueling."
+    }
+  ]
+}

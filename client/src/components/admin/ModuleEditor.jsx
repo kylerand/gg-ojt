@@ -7,6 +7,21 @@ import api from '../../services/api';
 const DRAFT_STORAGE_KEY = 'admin-module-editor-draft';
 const AUTO_SAVE_DELAY = 2000; // Auto-save draft after 2 seconds of inactivity
 
+// Available job roles for module targeting
+const JOB_ROLES = [
+  'Assembly Technician',
+  'Lead Assembly Technician',
+  'Quality Inspector',
+  'Electrical Specialist',
+  'Frame & Chassis Specialist',
+  'Paint & Body Technician',
+  'Sales',
+  'Supervisor',
+  'Trainer',
+  'Maintenance Technician',
+  'Warehouse Associate',
+];
+
 function ModuleEditor({ module, onSave, onCancel, onDelete }) {
   const [formData, setFormData] = useState({
     id: '',
@@ -14,6 +29,7 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
     description: '',
     estimatedTime: '30 minutes',
     thumbnailUrl: '',
+    jobRoles: [],
     steps: [],
     knowledgeChecks: [],
   });
@@ -80,6 +96,7 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
         description: module.description || '',
         estimatedTime: module.estimatedTime || '30 minutes',
         thumbnailUrl: module.thumbnailUrl || '',
+        jobRoles: module.jobRoles || [],
         steps: module.steps || [],
         knowledgeChecks: module.knowledgeChecks || [],
       });
@@ -361,6 +378,43 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
                   placeholder="e.g., 45 minutes"
                 />
               </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Job Roles</label>
+              <p className="form-help" style={{ marginBottom: '0.5rem' }}>
+                Select which job roles should see this module. Leave empty to show to all roles.
+              </p>
+              <div className="job-roles-grid">
+                {JOB_ROLES.map(role => (
+                  <label key={role} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.jobRoles?.includes(role) || false}
+                      onChange={(e) => {
+                        const currentRoles = formData.jobRoles || [];
+                        if (e.target.checked) {
+                          handleChange('jobRoles', [...currentRoles, role]);
+                        } else {
+                          handleChange('jobRoles', currentRoles.filter(r => r !== role));
+                        }
+                      }}
+                    />
+                    {role}
+                  </label>
+                ))}
+              </div>
+              {formData.jobRoles?.length > 0 && (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <Button 
+                    variant="outline" 
+                    size="small" 
+                    onClick={() => handleChange('jobRoles', [])}
+                  >
+                    Clear All
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 

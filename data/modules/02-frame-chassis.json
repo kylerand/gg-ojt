@@ -6,6 +6,7 @@
   "thumbnailUrl": "/images/modules/frame-chassis.png",
   "prerequisites": ["01-orientation"],
   "requiresSupervisorSignoff": false,
+  "jobRoles": ["Assembly Technician", "Lead Assembly Technician", "Frame & Chassis Specialist"],
   "steps": [
     {
       "id": "step-1",

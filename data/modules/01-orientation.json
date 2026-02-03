@@ -6,6 +6,7 @@
   "thumbnailUrl": "/images/modules/orientation.png",
   "prerequisites": [],
   "requiresSupervisorSignoff": true,
+  "jobRoles": [],
   "steps": [
     {
       "id": "step-1",

@@ -6,6 +6,7 @@
   "thumbnailUrl": "/images/modules/quality-inspection.png",
   "prerequisites": ["01-orientation", "02-frame-chassis", "03-electrical", "04-drivetrain", "05-steering-suspension", "06-body-accessories"],
   "requiresSupervisorSignoff": true,
+  "jobRoles": ["Quality Inspector", "Lead Assembly Technician"],
   "steps": [
     {
       "id": "step-1",
