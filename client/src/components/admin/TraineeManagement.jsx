@@ -3,12 +3,24 @@ import Button from '../common/Button';
 import TraineeEditor from './TraineeEditor';
 import api, { getAdminTrainees, resetProgress as resetProgressAPI, getModules } from '../../services/api';
 
+// Job role colors for badges
+const ROLE_COLORS = {
+  'Assembly': { bg: '#dbeafe', text: '#1e40af' },
+  'Quality Control': { bg: '#dcfce7', text: '#166534' },
+  'Sales': { bg: '#fef3c7', text: '#92400e' },
+  'Supervisor': { bg: '#f3e8ff', text: '#7c3aed' },
+  'Trainer': { bg: '#ffe4e6', text: '#be123c' },
+  'default': { bg: '#f1f5f9', text: '#475569' },
+};
+
 function TraineeManagement() {
   const [trainees, setTrainees] = useState([]);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('name');
+  const [filterByRole, setFilterByRole] = useState('all');
+  const [filterByStatus, setFilterByStatus] = useState('all');
   const [selectedTrainee, setSelectedTrainee] = useState(null);
   const [editingTrainee, setEditingTrainee] = useState(null);
 
@@ -59,15 +71,42 @@ function TraineeManagement() {
   };
 
   const getCompletionPercentage = (trainee) => {
-    const completed = Object.values(trainee.moduleProgress).filter(m => m.status === 'completed').length;
-    const total = 7; // Total modules
-    return Math.round((completed / total) * 100);
+    // Use actual modules count instead of hardcoded value
+    const totalModules = modules.length || 1;
+    const moduleProgress = trainee.moduleProgress || {};
+    const completed = Object.values(moduleProgress).filter(m => m.status === 'completed').length;
+    return Math.round((completed / totalModules) * 100);
   };
 
-  const filteredTrainees = trainees.filter(t => 
-    t.traineeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.traineeId?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const getTraineeStatus = (trainee) => {
+    const pct = getCompletionPercentage(trainee);
+    if (pct === 100) return 'completed';
+    if (pct > 0) return 'in-progress';
+    return 'not-started';
+  };
+
+  const getRoleColor = (role) => {
+    return ROLE_COLORS[role] || ROLE_COLORS['default'];
+  };
+
+  // Get unique job roles for filter dropdown
+  const uniqueRoles = [...new Set(trainees.map(t => t.jobRole).filter(Boolean))];
+
+  const filteredTrainees = trainees.filter(t => {
+    // Search filter
+    const matchesSearch = 
+      t.traineeName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.traineeId?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Role filter
+    const matchesRole = filterByRole === 'all' || t.jobRole === filterByRole;
+    
+    // Status filter
+    const status = getTraineeStatus(t);
+    const matchesStatus = filterByStatus === 'all' || status === filterByStatus;
+    
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   const sortedTrainees = [...filteredTrainees].sort((a, b) => {
     switch (sortBy) {
@@ -95,22 +134,26 @@ function TraineeManagement() {
             <span className="stat-number">{trainees.length}</span>
             <span className="stat-label">Total Trainees</span>
           </div>
-          <div className="stat-box">
+          <div className="stat-box completed">
             <span className="stat-number">
               {trainees.filter(t => getCompletionPercentage(t) === 100).length}
             </span>
-            <span className="stat-label">Completed All</span>
+            <span className="stat-label">Completed</span>
           </div>
-          <div className="stat-box">
+          <div className="stat-box in-progress">
             <span className="stat-number">
               {trainees.filter(t => {
-                const lastUpdate = new Date(t.lastUpdated || t.startedAt);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                return lastUpdate > weekAgo;
+                const pct = getCompletionPercentage(t);
+                return pct > 0 && pct < 100;
               }).length}
             </span>
-            <span className="stat-label">Active This Week</span>
+            <span className="stat-label">In Progress</span>
+          </div>
+          <div className="stat-box not-started">
+            <span className="stat-number">
+              {trainees.filter(t => getCompletionPercentage(t) === 0).length}
+            </span>
+            <span className="stat-label">Not Started</span>
           </div>
         </div>
       </div>
@@ -124,6 +167,26 @@ function TraineeManagement() {
           className="trainee-search-input"
         />
         <select 
+          value={filterByRole} 
+          onChange={(e) => setFilterByRole(e.target.value)}
+          className="trainee-filter-select"
+        >
+          <option value="all">All Roles</option>
+          {uniqueRoles.map(role => (
+            <option key={role} value={role}>{role}</option>
+          ))}
+        </select>
+        <select 
+          value={filterByStatus} 
+          onChange={(e) => setFilterByStatus(e.target.value)}
+          className="trainee-filter-select"
+        >
+          <option value="all">All Status</option>
+          <option value="completed">Completed</option>
+          <option value="in-progress">In Progress</option>
+          <option value="not-started">Not Started</option>
+        </select>
+        <select 
           value={sortBy} 
           onChange={(e) => setSortBy(e.target.value)}
           className="trainee-sort-select"
@@ -133,6 +196,22 @@ function TraineeManagement() {
           <option value="recent">Sort by Recent Activity</option>
         </select>
       </div>
+
+      {filteredTrainees.length !== trainees.length && (
+        <div className="filter-results-info">
+          Showing {filteredTrainees.length} of {trainees.length} trainees
+          <button 
+            className="clear-filters-btn"
+            onClick={() => {
+              setFilterByRole('all');
+              setFilterByStatus('all');
+              setSearchQuery('');
+            }}
+          >
+            Clear Filters
+          </button>
+        </div>
+      )}
 
       <div className="trainee-list-container">
         <div className="trainee-list">
@@ -144,11 +223,13 @@ function TraineeManagement() {
             sortedTrainees.map(trainee => {
               const completionPct = getCompletionPercentage(trainee);
               const isSelected = selectedTrainee?.traineeId === trainee.traineeId;
+              const status = getTraineeStatus(trainee);
+              const roleColor = getRoleColor(trainee.jobRole);
               
               return (
                 <div 
                   key={trainee.traineeId}
-                  className={`trainee-list-item ${isSelected ? 'selected' : ''}`}
+                  className={`trainee-list-item ${isSelected ? 'selected' : ''} status-${status}`}
                   onClick={() => setSelectedTrainee(trainee)}
                 >
                   <div className="trainee-avatar">
@@ -156,10 +237,23 @@ function TraineeManagement() {
                   </div>
                   <div className="trainee-info">
                     <div className="trainee-name">{trainee.traineeName}</div>
-                    <div className="trainee-id">ID: {trainee.traineeId}</div>
+                    <div className="trainee-meta">
+                      <span className="trainee-id">ID: {trainee.traineeId}</span>
+                      {trainee.jobRole && (
+                        <span 
+                          className="trainee-role-tag"
+                          style={{ 
+                            backgroundColor: roleColor.bg, 
+                            color: roleColor.text 
+                          }}
+                        >
+                          {trainee.jobRole}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="trainee-progress-mini">
-                    <div className="progress-circle">
+                    <div className={`progress-circle ${status}`}>
                       <svg viewBox="0 0 36 36">
                         <path
                           className="progress-circle-bg"
@@ -194,6 +288,17 @@ function TraineeManagement() {
               <div className="trainee-detail-info">
                 <h3>{selectedTrainee.traineeName}</h3>
                 <p>ID: {selectedTrainee.traineeId}</p>
+                {selectedTrainee.jobRole && (
+                  <span 
+                    className="trainee-role-tag"
+                    style={{ 
+                      backgroundColor: getRoleColor(selectedTrainee.jobRole).bg, 
+                      color: getRoleColor(selectedTrainee.jobRole).text 
+                    }}
+                  >
+                    {selectedTrainee.jobRole}
+                  </span>
+                )}
                 <p>Cart Type: {selectedTrainee.cartType}</p>
               </div>
               <button 
@@ -207,9 +312,12 @@ function TraineeManagement() {
             <div className="trainee-detail-section">
               <h4>Training Progress</h4>
               <div className="trainee-detail-progress">
+                <div className="progress-status-badge" data-status={getTraineeStatus(selectedTrainee)}>
+                  {getTraineeStatus(selectedTrainee).replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </div>
                 <div className="progress-bar-large">
                   <div 
-                    className="progress-fill"
+                    className={`progress-fill status-${getTraineeStatus(selectedTrainee)}`}
                     style={{ width: `${getCompletionPercentage(selectedTrainee)}%` }}
                   />
                 </div>

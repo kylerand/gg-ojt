@@ -121,6 +121,29 @@ function SettingsPanel() {
     passingScore: 80,
     allowSkipSteps: false,
   });
+  const [hasChanges, setHasChanges] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null);
+
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('admin-settings');
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings));
+    }
+  }, []);
+
+  const handleSettingChange = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
+    setSaveStatus(null);
+  };
+
+  const handleSaveSettings = () => {
+    localStorage.setItem('admin-settings', JSON.stringify(settings));
+    setHasChanges(false);
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
 
   const handleClearAllData = () => {
     if (!confirm('Are you sure you want to clear ALL local data? This will remove all Q&A questions, notes, and bookmarks. This cannot be undone.')) {
@@ -186,7 +209,7 @@ function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.requireVideoCompletion}
-              onChange={(e) => setSettings({...settings, requireVideoCompletion: e.target.checked})}
+              onChange={(e) => handleSettingChange('requireVideoCompletion', e.target.checked)}
             />
             <span>Require video completion before proceeding</span>
           </label>
@@ -194,7 +217,7 @@ function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.requireSafetyAcknowledgment}
-              onChange={(e) => setSettings({...settings, requireSafetyAcknowledgment: e.target.checked})}
+              onChange={(e) => handleSettingChange('requireSafetyAcknowledgment', e.target.checked)}
             />
             <span>Require safety acknowledgment</span>
           </label>
@@ -202,7 +225,7 @@ function SettingsPanel() {
             <input
               type="checkbox"
               checked={settings.allowSkipSteps}
-              onChange={(e) => setSettings({...settings, allowSkipSteps: e.target.checked})}
+              onChange={(e) => handleSettingChange('allowSkipSteps', e.target.checked)}
             />
             <span>Allow skipping steps (not recommended)</span>
           </label>
@@ -214,11 +237,26 @@ function SettingsPanel() {
                 min="0"
                 max="100"
                 value={settings.passingScore}
-                onChange={(e) => setSettings({...settings, passingScore: parseInt(e.target.value)})}
+                onChange={(e) => handleSettingChange('passingScore', parseInt(e.target.value))}
                 className="setting-number-input"
               />
             </label>
           </div>
+        </div>
+        <div className="settings-save-section">
+          <button 
+            className={`settings-btn primary ${hasChanges ? '' : 'disabled'}`}
+            onClick={handleSaveSettings}
+            disabled={!hasChanges}
+          >
+            💾 Save Settings
+          </button>
+          {saveStatus === 'saved' && (
+            <span className="save-status success">✓ Settings saved successfully</span>
+          )}
+          {hasChanges && (
+            <span className="save-status warning">Unsaved changes</span>
+          )}
         </div>
       </div>
 

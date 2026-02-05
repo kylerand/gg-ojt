@@ -5,7 +5,7 @@ function AnalyticsDashboard() {
   const [trainees, setTrainees] = useState([]);
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('all');
+  const [viewMode, setViewMode] = useState('trainees'); // 'trainees' or 'modules'
 
   useEffect(() => {
     loadData();
@@ -24,6 +24,19 @@ function AnalyticsDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getTraineeCompletionPct = (trainee) => {
+    if (modules.length === 0) return 0;
+    const completed = Object.values(trainee.moduleProgress || {}).filter(m => m.status === 'completed').length;
+    return Math.round((completed / modules.length) * 100);
+  };
+
+  const getTraineeStatus = (trainee) => {
+    const pct = getTraineeCompletionPct(trainee);
+    if (pct === 100) return 'completed';
+    if (pct > 0) return 'in-progress';
+    return 'not-started';
   };
 
   const getModuleCompletionStats = () => {
@@ -48,43 +61,12 @@ function AnalyticsDashboard() {
     return stats;
   };
 
-  const getAverageQuizScores = () => {
-    const scores = {};
-    modules.forEach(m => {
-      const moduleScores = [];
-      trainees.forEach(trainee => {
-        const progress = trainee.moduleProgress?.[m.id];
-        if (progress?.knowledgeCheckScore) {
-          // Parse score like "5/6 (83%)"
-          const match = progress.knowledgeCheckScore.match(/(\d+)\/(\d+)/);
-          if (match) {
-            moduleScores.push((parseInt(match[1]) / parseInt(match[2])) * 100);
-          }
-        }
-      });
-      scores[m.id] = moduleScores.length > 0 
-        ? Math.round(moduleScores.reduce((a, b) => a + b, 0) / moduleScores.length)
-        : null;
-    });
-    return scores;
-  };
-
-  const getQAStats = () => {
-    let total = 0;
-    let pending = 0;
-    let answered = 0;
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('qa-')) {
-        const questions = JSON.parse(localStorage.getItem(key));
-        total += questions.length;
-        pending += questions.filter(q => q.status === 'pending').length;
-        answered += questions.filter(q => q.status === 'answered').length;
-      }
-    }
-
-    return { total, pending, answered };
+  const getCompletionByStatus = () => {
+    return {
+      completed: trainees.filter(t => getTraineeStatus(t) === 'completed').length,
+      inProgress: trainees.filter(t => getTraineeStatus(t) === 'in-progress').length,
+      notStarted: trainees.filter(t => getTraineeStatus(t) === 'not-started').length
+    };
   };
 
   const getActiveTraineesThisWeek = () => {
@@ -96,13 +78,20 @@ function AnalyticsDashboard() {
     }).length;
   };
 
-  const getCompletionRate = () => {
-    if (trainees.length === 0) return 0;
-    const fullyCompleted = trainees.filter(t => {
-      const completed = Object.values(t.moduleProgress || {}).filter(m => m.status === 'completed').length;
-      return completed === modules.length;
-    }).length;
-    return Math.round((fullyCompleted / trainees.length) * 100);
+  const getTraineesByRole = () => {
+    const byRole = {};
+    trainees.forEach(t => {
+      const role = t.jobRole || 'Unassigned';
+      if (!byRole[role]) {
+        byRole[role] = { total: 0, completed: 0, inProgress: 0, notStarted: 0 };
+      }
+      byRole[role].total++;
+      const status = getTraineeStatus(t);
+      if (status === 'completed') byRole[role].completed++;
+      else if (status === 'in-progress') byRole[role].inProgress++;
+      else byRole[role].notStarted++;
+    });
+    return byRole;
   };
 
   if (loading) {
@@ -110,22 +99,32 @@ function AnalyticsDashboard() {
   }
 
   const moduleStats = getModuleCompletionStats();
-  const quizScores = getAverageQuizScores();
-  const qaStats = getQAStats();
+  const statusCounts = getCompletionByStatus();
+  const roleStats = getTraineesByRole();
+
+  // Sort trainees by completion percentage
+  const traineesSortedByProgress = [...trainees].sort(
+    (a, b) => getTraineeCompletionPct(b) - getTraineeCompletionPct(a)
+  );
 
   return (
     <div className="analytics-dashboard">
       <div className="analytics-header">
         <h2>Analytics Dashboard</h2>
-        <select 
-          value={timeRange} 
-          onChange={(e) => setTimeRange(e.target.value)}
-          className="analytics-time-select"
-        >
-          <option value="all">All Time</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-        </select>
+        <div className="analytics-view-toggle">
+          <button 
+            className={`view-toggle-btn ${viewMode === 'trainees' ? 'active' : ''}`}
+            onClick={() => setViewMode('trainees')}
+          >
+            👤 Trainee Progress
+          </button>
+          <button 
+            className={`view-toggle-btn ${viewMode === 'modules' ? 'active' : ''}`}
+            onClick={() => setViewMode('modules')}
+          >
+            📚 Module Completion
+          </button>
+        </div>
       </div>
 
       {/* Key Metrics */}
@@ -137,107 +136,171 @@ function AnalyticsDashboard() {
             <span className="metric-label">Total Trainees</span>
           </div>
         </div>
-        <div className="metric-card">
+        <div className="metric-card completed">
+          <div className="metric-icon">✅</div>
+          <div className="metric-content">
+            <span className="metric-value">{statusCounts.completed}</span>
+            <span className="metric-label">Fully Certified</span>
+          </div>
+        </div>
+        <div className="metric-card in-progress">
           <div className="metric-icon">📈</div>
           <div className="metric-content">
-            <span className="metric-value">{getActiveTraineesThisWeek()}</span>
-            <span className="metric-label">Active This Week</span>
+            <span className="metric-value">{statusCounts.inProgress}</span>
+            <span className="metric-label">In Training</span>
           </div>
         </div>
         <div className="metric-card">
-          <div className="metric-icon">🎓</div>
+          <div className="metric-icon">⏳</div>
           <div className="metric-content">
-            <span className="metric-value">{getCompletionRate()}%</span>
-            <span className="metric-label">Completion Rate</span>
-          </div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-icon">💬</div>
-          <div className="metric-content">
-            <span className="metric-value">{qaStats.pending}</span>
-            <span className="metric-label">Pending Questions</span>
+            <span className="metric-value">{statusCounts.notStarted}</span>
+            <span className="metric-label">Not Started</span>
           </div>
         </div>
       </div>
 
-      {/* Module Progress Chart */}
-      <div className="analytics-section">
-        <h3>Module Completion Overview</h3>
-        <div className="module-chart">
-          {modules.map(m => {
-            const stats = moduleStats[m.id] || { completed: 0, inProgress: 0, notStarted: 0 };
-            const total = trainees.length || 1;
-            const completedPct = (stats.completed / total) * 100;
-            const inProgressPct = (stats.inProgress / total) * 100;
-            
-            return (
-              <div key={m.id} className="module-chart-row">
-                <div className="module-chart-label">
-                  <span className="module-chart-title">{m.title}</span>
-                  <span className="module-chart-stats">
-                    {stats.completed}/{total} completed
-                  </span>
-                </div>
-                <div className="module-chart-bar">
-                  <div 
-                    className="module-chart-fill completed"
-                    style={{ width: `${completedPct}%` }}
-                  />
-                  <div 
-                    className="module-chart-fill in-progress"
-                    style={{ width: `${inProgressPct}%`, left: `${completedPct}%` }}
-                  />
-                </div>
-                {quizScores[m.id] !== null && (
-                  <div className="module-chart-score">
-                    Avg: {quizScores[m.id]}%
+      {viewMode === 'trainees' ? (
+        <>
+          {/* Individual Trainee Progress */}
+          <div className="analytics-section">
+            <h3>Individual Trainee Progress</h3>
+            <p className="section-subtitle">Track each trainee's completion status and progress</p>
+            <div className="trainee-progress-list">
+              {traineesSortedByProgress.map(trainee => {
+                const pct = getTraineeCompletionPct(trainee);
+                const status = getTraineeStatus(trainee);
+                const completedModules = Object.values(trainee.moduleProgress || {}).filter(m => m.status === 'completed').length;
+                
+                return (
+                  <div key={trainee.traineeId} className={`trainee-progress-row status-${status}`}>
+                    <div className="trainee-progress-info">
+                      <div className="trainee-progress-avatar">
+                        {(trainee.traineeName || 'U')[0].toUpperCase()}
+                      </div>
+                      <div className="trainee-progress-details">
+                        <span className="trainee-progress-name">{trainee.traineeName}</span>
+                        <span className="trainee-progress-meta">
+                          {trainee.jobRole && (
+                            <span className="trainee-progress-role">{trainee.jobRole}</span>
+                          )}
+                          <span className="trainee-progress-modules">
+                            {completedModules}/{modules.length} modules
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="trainee-progress-bar-container">
+                      <div className="trainee-progress-bar">
+                        <div 
+                          className={`trainee-progress-fill status-${status}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className={`trainee-progress-pct status-${status}`}>{pct}%</span>
+                    </div>
+                    <div className={`trainee-status-badge ${status}`}>
+                      {status === 'completed' ? '✓ Certified' : 
+                       status === 'in-progress' ? 'In Progress' : 'Not Started'}
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <div className="module-chart-legend">
-          <span className="legend-item">
-            <span className="legend-color completed"></span> Completed
-          </span>
-          <span className="legend-item">
-            <span className="legend-color in-progress"></span> In Progress
-          </span>
-          <span className="legend-item">
-            <span className="legend-color not-started"></span> Not Started
-          </span>
-        </div>
-      </div>
+                );
+              })}
+            </div>
+          </div>
 
-      {/* Q&A Summary */}
-      <div className="analytics-section">
-        <h3>Q&A Activity</h3>
-        <div className="qa-analytics-grid">
-          <div className="qa-analytics-card">
-            <span className="qa-analytics-number">{qaStats.total}</span>
-            <span className="qa-analytics-label">Total Questions</span>
+          {/* Progress by Role */}
+          <div className="analytics-section">
+            <h3>Progress by Job Role</h3>
+            <p className="section-subtitle">See how different teams are progressing through training</p>
+            <div className="role-progress-grid">
+              {Object.entries(roleStats).map(([role, stats]) => (
+                <div key={role} className="role-progress-card">
+                  <h4>{role}</h4>
+                  <div className="role-progress-stats">
+                    <div className="role-stat">
+                      <span className="role-stat-value">{stats.total}</span>
+                      <span className="role-stat-label">Total</span>
+                    </div>
+                    <div className="role-stat completed">
+                      <span className="role-stat-value">{stats.completed}</span>
+                      <span className="role-stat-label">Certified</span>
+                    </div>
+                    <div className="role-stat in-progress">
+                      <span className="role-stat-value">{stats.inProgress}</span>
+                      <span className="role-stat-label">In Progress</span>
+                    </div>
+                    <div className="role-stat not-started">
+                      <span className="role-stat-value">{stats.notStarted}</span>
+                      <span className="role-stat-label">Not Started</span>
+                    </div>
+                  </div>
+                  <div className="role-progress-bar">
+                    <div 
+                      className="role-bar-fill completed"
+                      style={{ width: `${(stats.completed / stats.total) * 100}%` }}
+                    />
+                    <div 
+                      className="role-bar-fill in-progress"
+                      style={{ width: `${(stats.inProgress / stats.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="qa-analytics-card pending">
-            <span className="qa-analytics-number">{qaStats.pending}</span>
-            <span className="qa-analytics-label">Pending Response</span>
+        </>
+      ) : (
+        /* Module Completion View */
+        <div className="analytics-section">
+          <h3>Module Completion Overview</h3>
+          <p className="section-subtitle">See how many trainees have completed each module</p>
+          <div className="module-chart">
+            {modules.map(m => {
+              const stats = moduleStats[m.id] || { completed: 0, inProgress: 0, notStarted: 0 };
+              const total = trainees.length || 1;
+              const completedPct = (stats.completed / total) * 100;
+              const inProgressPct = (stats.inProgress / total) * 100;
+              
+              return (
+                <div key={m.id} className="module-chart-row">
+                  <div className="module-chart-label">
+                    <span className="module-chart-title">{m.title}</span>
+                    <span className="module-chart-stats">
+                      {stats.completed}/{total} completed
+                    </span>
+                  </div>
+                  <div className="module-chart-bar">
+                    <div 
+                      className="module-chart-fill completed"
+                      style={{ width: `${completedPct}%` }}
+                    />
+                    <div 
+                      className="module-chart-fill in-progress"
+                      style={{ width: `${inProgressPct}%`, left: `${completedPct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-          <div className="qa-analytics-card answered">
-            <span className="qa-analytics-number">{qaStats.answered}</span>
-            <span className="qa-analytics-label">Answered</span>
-          </div>
-          <div className="qa-analytics-card">
-            <span className="qa-analytics-number">
-              {qaStats.total > 0 ? Math.round((qaStats.answered / qaStats.total) * 100) : 0}%
+          <div className="module-chart-legend">
+            <span className="legend-item">
+              <span className="legend-color completed"></span> Completed
             </span>
-            <span className="qa-analytics-label">Response Rate</span>
+            <span className="legend-item">
+              <span className="legend-color in-progress"></span> In Progress
+            </span>
+            <span className="legend-item">
+              <span className="legend-color not-started"></span> Not Started
+            </span>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Recent Activity */}
+      {/* Recent Activity - Always shown */}
       <div className="analytics-section">
         <h3>Recent Activity</h3>
+        <p className="section-subtitle">{getActiveTraineesThisWeek()} trainees active this week</p>
         <div className="recent-activity-list">
           {trainees
             .sort((a, b) => new Date(b.lastUpdated || b.startedAt) - new Date(a.lastUpdated || a.startedAt))
@@ -250,7 +313,7 @@ function AnalyticsDashboard() {
                 <div className="activity-content">
                   <span className="activity-name">{trainee.traineeName}</span>
                   <span className="activity-action">
-                    Working on {trainee.currentModule || 'training'}
+                    {getTraineeCompletionPct(trainee)}% complete • {trainee.currentModule || 'training'}
                   </span>
                 </div>
                 <div className="activity-time">
