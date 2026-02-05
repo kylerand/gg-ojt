@@ -2278,6 +2278,13 @@ body {
   background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
+.progress-detail-text {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
 .module-status-list {
   display: flex;
   flex-direction: column;

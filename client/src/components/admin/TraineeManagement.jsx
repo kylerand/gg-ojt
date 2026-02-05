@@ -327,6 +327,11 @@ function TraineeManagement() {
                   />
                 </div>
                 <span>{getCompletionPercentage(selectedTrainee)}% Complete</span>
+                {selectedTrainee.completedStepsCount !== undefined && (
+                  <span className="progress-detail-text">
+                    ({selectedTrainee.completedStepsCount}/{selectedTrainee.totalSteps} steps • {selectedTrainee.completedModulesCount}/{selectedTrainee.totalModules} modules)
+                  </span>
+                )}
               </div>
             </div>
 

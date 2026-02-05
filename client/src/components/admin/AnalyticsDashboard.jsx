@@ -174,7 +174,8 @@ function AnalyticsDashboard() {
               {traineesSortedByProgress.map(trainee => {
                 const pct = getTraineeCompletionPct(trainee);
                 const status = getTraineeStatus(trainee);
-                const completedModules = Object.values(trainee.moduleProgress || {}).filter(m => m.status === 'completed').length;
+                const completedModules = trainee.completedModulesCount ?? 
+                  Object.values(trainee.moduleProgress || {}).filter(m => m.status === 'completed').length;
                 
                 return (
                   <div key={trainee.traineeId} className={`trainee-progress-row status-${status}`}>
@@ -189,7 +190,10 @@ function AnalyticsDashboard() {
                             <span className="trainee-progress-role">{trainee.jobRole}</span>
                           )}
                           <span className="trainee-progress-modules">
-                            {completedModules}/{modules.length} modules
+                            {trainee.completedStepsCount !== undefined 
+                              ? `${trainee.completedStepsCount}/${trainee.totalSteps} steps`
+                              : `${completedModules}/${modules.length} modules`
+                            }
                           </span>
                         </span>
                       </div>

@@ -28,20 +28,43 @@ router.get('/trainees', async (req, res, next) => {
   try {
     const allProgress = await ProgressTracker.getAllProgress();
     const modules = await ModuleLoader.getAllModules();
+    
+    // Calculate total steps across all modules
+    const totalSteps = modules.reduce((sum, m) => sum + (m.steps?.length || 0), 0);
     const totalModules = modules.length;
 
-    // Add completion percentage to each trainee
+    // Create a map of module id to step count for quick lookup
+    const moduleStepCounts = {};
+    modules.forEach(m => {
+      moduleStepCounts[m.id] = m.steps?.length || 0;
+    });
+
+    // Add completion percentage to each trainee based on steps completed
     const traineesWithCompletion = allProgress.map(trainee => {
-      const completedCount = Object.values(trainee.moduleProgress || {})
-        .filter(m => m.status === 'completed').length;
+      let completedSteps = 0;
+      let completedModulesCount = 0;
+      
+      // Count completed steps across all modules
+      Object.entries(trainee.moduleProgress || {}).forEach(([moduleId, modProgress]) => {
+        if (modProgress.status === 'completed') {
+          // If module is completed, count all its steps
+          completedSteps += moduleStepCounts[moduleId] || 0;
+          completedModulesCount++;
+        } else if (modProgress.completedSteps) {
+          // Otherwise count individual completed steps
+          completedSteps += modProgress.completedSteps.length;
+        }
+      });
       
       return {
         ...trainee,
-        completionPercentage: totalModules > 0 
-          ? Math.round((completedCount / totalModules) * 100) 
+        completionPercentage: totalSteps > 0 
+          ? Math.round((completedSteps / totalSteps) * 100) 
           : 0,
         totalModules,
-        completedModulesCount: completedCount,
+        totalSteps,
+        completedModulesCount,
+        completedStepsCount: completedSteps,
       };
     });
 
