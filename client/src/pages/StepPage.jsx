@@ -17,6 +17,8 @@ import NotesPanel from '../components/training/NotesPanel';
 import QASection from '../components/training/QASection';
 import BookmarkButton from '../components/training/BookmarkButton';
 import ResourcesPanel from '../components/training/ResourcesPanel';
+import ContentRenderer from '../components/training/ContentRenderer';
+import KeyTakeaways from '../components/training/KeyTakeaways';
 
 function StepPage() {
   const { moduleId, stepId } = useParams();
@@ -334,27 +336,37 @@ function StepPage() {
             </p>
           )}
 
-          {/* Content - Main description/overview */}
-          {currentStep.content && (
-            <div style={{ marginTop: '2rem' }}>
-              <div style={{ 
-                whiteSpace: 'pre-line', 
-                lineHeight: '1.8',
-                fontSize: '1.05rem',
-                color: 'var(--text-primary)'
-              }}>
-                {currentStep.content}
-              </div>
+          {/* Text-only step indicator */}
+          {!currentStep.videoUrl && (
+            <div className="text-only-banner">
+              <span className="text-only-icon">📖</span>
+              <span className="text-only-label">Reading Material</span>
             </div>
+          )}
+
+          {/* Content - Main description/overview with rich formatting */}
+          {currentStep.content && (
+            <div style={{ marginTop: currentStep.videoUrl ? '2rem' : '1rem' }}>
+              <ContentRenderer 
+                content={currentStep.content} 
+                showReadingTime={!currentStep.videoUrl}
+              />
+            </div>
+          )}
+
+          {/* Key Takeaways - if specified */}
+          {currentStep.keyTakeaways && currentStep.keyTakeaways.length > 0 && (
+            <KeyTakeaways takeaways={currentStep.keyTakeaways} />
           )}
 
           {/* Instructions */}
           {currentStep.instructions && (
             <div style={{ marginTop: '2rem' }}>
-              <h3>Instructions</h3>
-              <p style={{ whiteSpace: 'pre-line', lineHeight: '1.8', marginTop: '1rem' }}>
-                {currentStep.instructions}
-              </p>
+              <h3>📋 Instructions</h3>
+              <ContentRenderer 
+                content={currentStep.instructions} 
+                showReadingTime={false}
+              />
             </div>
           )}
 

@@ -12,6 +12,7 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
     safetyWarnings: step.safetyWarnings || [],
     tools: step.tools || [],
     materials: step.materials || [],
+    keyTakeaways: step.keyTakeaways || [],
     requiresVideoCompletion: step.requiresVideoCompletion || false,
     requiresConfirmation: step.requiresConfirmation !== false,
   });
@@ -19,6 +20,7 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
   const [newWarning, setNewWarning] = useState('');
   const [newTool, setNewTool] = useState('');
   const [newMaterial, setNewMaterial] = useState('');
+  const [newTakeaway, setNewTakeaway] = useState('');
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -232,6 +234,39 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
               variant="outline" 
               size="small"
               onClick={() => addArrayItem('materials', newMaterial, setNewMaterial)}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+
+        {/* Key Takeaways */}
+        <div className="form-group">
+          <label className="form-label">🎯 Key Takeaways</label>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+            Highlight the most important points trainees should remember from this step.
+          </p>
+          <div className="array-items">
+            {formData.keyTakeaways.map((takeaway, index) => (
+              <div key={index} className="array-item takeaway">
+                <span>{takeaway}</span>
+                <button onClick={() => removeArrayItem('keyTakeaways', index)}>×</button>
+              </div>
+            ))}
+          </div>
+          <div className="array-input-row">
+            <input
+              type="text"
+              className="form-input"
+              value={newTakeaway}
+              onChange={(e) => setNewTakeaway(e.target.value)}
+              placeholder="Add a key takeaway..."
+              onKeyPress={(e) => e.key === 'Enter' && addArrayItem('keyTakeaways', newTakeaway, setNewTakeaway)}
+            />
+            <Button 
+              variant="outline" 
+              size="small"
+              onClick={() => addArrayItem('keyTakeaways', newTakeaway, setNewTakeaway)}
             >
               Add
             </Button>

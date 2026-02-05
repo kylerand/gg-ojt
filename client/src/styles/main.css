@@ -612,6 +612,28 @@ body {
   min-width: 0;
 }
 
+/* Text-only step banner */
+.text-only-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-radius: 12px;
+  border: 1px solid #bae6fd;
+  margin-bottom: 1rem;
+}
+
+.text-only-icon {
+  font-size: 2rem;
+}
+
+.text-only-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0369a1;
+}
+
 /* Module Sidebar */
 .module-sidebar {
   background: var(--surface-color);
