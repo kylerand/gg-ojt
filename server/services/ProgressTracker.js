@@ -300,12 +300,20 @@ class ProgressTracker {
         .from('module_progress')
         .select('*');
 
+      // Get all step progress - THIS WAS MISSING!
+      const { data: allStepProgress } = await supabase
+        .from('step_progress')
+        .select('*');
+
       // Map and combine
       return allProgress.map(p => {
         const moduleProgress = (allModuleProgress || []).filter(
           mp => mp.trainee_id === p.trainee_id
         );
-        return this.mapProgressFromDb(p, moduleProgress);
+        const stepProgress = (allStepProgress || []).filter(
+          sp => sp.trainee_id === p.trainee_id
+        );
+        return this.mapProgressFromDb(p, moduleProgress, stepProgress);
       });
     } else {
       const files = await listFiles(this.progressPath);
