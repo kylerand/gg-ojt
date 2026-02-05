@@ -376,27 +376,49 @@ class ProgressTracker {
     }
 
     if (this.useSupabase) {
-      const dbUpdates = {};
-      if (updates.traineeName !== undefined) dbUpdates.trainee_name = updates.traineeName;
-      if (updates.cartType !== undefined) dbUpdates.cart_type = updates.cartType;
-      if (updates.email !== undefined) dbUpdates.email = updates.email;
-      if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
-      if (updates.department !== undefined) dbUpdates.department = updates.department;
-      if (updates.supervisor !== undefined) dbUpdates.supervisor = updates.supervisor;
-      if (updates.hireDate !== undefined) dbUpdates.hire_date = updates.hireDate || null;
-      if (updates.jobRole !== undefined) dbUpdates.job_role = updates.jobRole;
-      if (updates.certifications !== undefined) dbUpdates.certifications = updates.certifications || [];
-      if (updates.emergencyContact !== undefined) dbUpdates.emergency_contact = updates.emergencyContact;
-      if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
+      // Update progress table
+      const progressUpdates = {};
+      if (updates.traineeName !== undefined) progressUpdates.trainee_name = updates.traineeName;
+      if (updates.cartType !== undefined) progressUpdates.cart_type = updates.cartType;
+      if (updates.email !== undefined) progressUpdates.email = updates.email;
+      if (updates.phone !== undefined) progressUpdates.phone = updates.phone;
+      if (updates.department !== undefined) progressUpdates.department = updates.department;
+      if (updates.supervisor !== undefined) progressUpdates.supervisor = updates.supervisor;
+      if (updates.hireDate !== undefined) progressUpdates.hire_date = updates.hireDate || null;
+      if (updates.jobRole !== undefined) progressUpdates.job_role = updates.jobRole;
+      if (updates.certifications !== undefined) progressUpdates.certifications = updates.certifications || [];
+      if (updates.emergencyContact !== undefined) progressUpdates.emergency_contact = updates.emergencyContact;
+      if (updates.notes !== undefined) progressUpdates.notes = updates.notes;
 
-      const { error } = await supabase
+      const { error: progressError } = await supabase
         .from('progress')
-        .update(dbUpdates)
+        .update(progressUpdates)
         .eq('trainee_id', traineeId);
 
-      if (error) {
-        console.error('Failed to update profile:', error);
-        throw new Error(`Failed to update profile: ${error.message}`);
+      if (progressError) {
+        console.error('Failed to update progress profile:', progressError);
+        throw new Error(`Failed to update profile: ${progressError.message}`);
+      }
+
+      // Also update users table (for fields that exist there)
+      const userUpdates = {};
+      if (updates.traineeName !== undefined) userUpdates.name = updates.traineeName;
+      if (updates.email !== undefined) userUpdates.email = updates.email;
+      if (updates.department !== undefined) userUpdates.department = updates.department;
+      if (updates.hireDate !== undefined) userUpdates.hire_date = updates.hireDate || null;
+      if (updates.jobRole !== undefined) userUpdates.job_role = updates.jobRole;
+      if (updates.certifications !== undefined) userUpdates.certifications = updates.certifications || [];
+
+      if (Object.keys(userUpdates).length > 0) {
+        const { error: userError } = await supabase
+          .from('users')
+          .update(userUpdates)
+          .eq('employee_id', traineeId);
+
+        if (userError) {
+          console.warn('Failed to update users table (may not exist for this trainee):', userError.message);
+          // Don't throw - progress was updated successfully
+        }
       }
 
       return await this.getProgress(traineeId);
