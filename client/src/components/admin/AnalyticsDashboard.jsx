@@ -26,10 +26,15 @@ function AnalyticsDashboard() {
     }
   };
 
+  // Use backend-calculated completion percentage if available
   const getTraineeCompletionPct = (trainee) => {
-    if (modules.length === 0) return 0;
+    if (trainee.completionPercentage !== undefined) {
+      return trainee.completionPercentage;
+    }
+    // Fallback to local calculation
+    const totalModules = trainee.totalModules || modules.length || 1;
     const completed = Object.values(trainee.moduleProgress || {}).filter(m => m.status === 'completed').length;
-    return Math.round((completed / modules.length) * 100);
+    return Math.round((completed / totalModules) * 100);
   };
 
   const getTraineeStatus = (trainee) => {

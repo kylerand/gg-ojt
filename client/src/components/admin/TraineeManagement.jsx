@@ -70,9 +70,14 @@ function TraineeManagement() {
     return Object.entries(notes).filter(([_, value]) => value.trim());
   };
 
+  // Use backend-calculated completion percentage if available, fallback to local calculation
   const getCompletionPercentage = (trainee) => {
-    // Use actual modules count instead of hardcoded value
-    const totalModules = modules.length || 1;
+    // Prefer backend-calculated value
+    if (trainee.completionPercentage !== undefined) {
+      return trainee.completionPercentage;
+    }
+    // Fallback: calculate locally
+    const totalModules = trainee.totalModules || modules.length || 1;
     const moduleProgress = trainee.moduleProgress || {};
     const completed = Object.values(moduleProgress).filter(m => m.status === 'completed').length;
     return Math.round((completed / totalModules) * 100);

@@ -27,7 +27,25 @@ const upload = multer({
 router.get('/trainees', async (req, res, next) => {
   try {
     const allProgress = await ProgressTracker.getAllProgress();
-    res.json(allProgress);
+    const modules = await ModuleLoader.getAll();
+    const totalModules = modules.length;
+
+    // Add completion percentage to each trainee
+    const traineesWithCompletion = allProgress.map(trainee => {
+      const completedCount = Object.values(trainee.moduleProgress || {})
+        .filter(m => m.status === 'completed').length;
+      
+      return {
+        ...trainee,
+        completionPercentage: totalModules > 0 
+          ? Math.round((completedCount / totalModules) * 100) 
+          : 0,
+        totalModules,
+        completedModulesCount: completedCount,
+      };
+    });
+
+    res.json(traineesWithCompletion);
   } catch (error) {
     next(new AppError(error.message, 500));
   }
