@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import api from '../../services/api';
 
-function VideoUploader({ onUploadComplete, currentVideoUrl }) {
+function VideoUploader({ onUploadComplete, onRemove, currentVideoUrl }) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
@@ -13,6 +13,12 @@ function VideoUploader({ onUploadComplete, currentVideoUrl }) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleRemove = () => {
+    if (confirm('Are you sure you want to remove this video?')) {
+      onRemove && onRemove();
+    }
   };
 
   const handleUpload = async (e) => {
@@ -68,6 +74,19 @@ function VideoUploader({ onUploadComplete, currentVideoUrl }) {
     <div className="video-uploader">
       {currentVideoUrl && !uploading && (
         <div className="current-video">
+          <div className="current-video-header">
+            <span className="video-label">Current Video</span>
+            {onRemove && (
+              <button 
+                type="button"
+                className="remove-video-btn"
+                onClick={handleRemove}
+                title="Remove video"
+              >
+                🗑️ Remove Video
+              </button>
+            )}
+          </div>
           <video 
             src={currentVideoUrl} 
             controls 
@@ -125,6 +144,35 @@ function VideoUploader({ onUploadComplete, currentVideoUrl }) {
           background: #f5f5f5;
           padding: 12px;
           border-radius: 8px;
+        }
+
+        .current-video-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+        }
+
+        .video-label {
+          font-weight: 600;
+          color: #333;
+          font-size: 14px;
+        }
+
+        .remove-video-btn {
+          background: #fee2e2;
+          color: #dc2626;
+          border: 1px solid #fecaca;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .remove-video-btn:hover {
+          background: #fecaca;
+          border-color: #f87171;
         }
 
         .video-url-display {
