@@ -379,11 +379,25 @@ class ProgressTracker {
       const dbUpdates = {};
       if (updates.traineeName !== undefined) dbUpdates.trainee_name = updates.traineeName;
       if (updates.cartType !== undefined) dbUpdates.cart_type = updates.cartType;
+      if (updates.email !== undefined) dbUpdates.email = updates.email;
+      if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+      if (updates.department !== undefined) dbUpdates.department = updates.department;
+      if (updates.supervisor !== undefined) dbUpdates.supervisor = updates.supervisor;
+      if (updates.hireDate !== undefined) dbUpdates.hire_date = updates.hireDate || null;
+      if (updates.jobRole !== undefined) dbUpdates.job_role = updates.jobRole;
+      if (updates.certifications !== undefined) dbUpdates.certifications = updates.certifications || [];
+      if (updates.emergencyContact !== undefined) dbUpdates.emergency_contact = updates.emergencyContact;
+      if (updates.notes !== undefined) dbUpdates.notes = updates.notes;
 
-      await supabase
+      const { error } = await supabase
         .from('progress')
         .update(dbUpdates)
         .eq('trainee_id', traineeId);
+
+      if (error) {
+        console.error('Failed to update profile:', error);
+        throw new Error(`Failed to update profile: ${error.message}`);
+      }
 
       return await this.getProgress(traineeId);
     } else {
@@ -518,6 +532,15 @@ class ProgressTracker {
       traineeId: progressData.trainee_id,
       traineeName: progressData.trainee_name,
       cartType: progressData.cart_type,
+      email: progressData.email || '',
+      phone: progressData.phone || '',
+      department: progressData.department || '',
+      supervisor: progressData.supervisor || '',
+      hireDate: progressData.hire_date || '',
+      jobRole: progressData.job_role || '',
+      certifications: progressData.certifications || [],
+      emergencyContact: progressData.emergency_contact || '',
+      notes: progressData.notes || '',
       startedAt: progressData.started_at || progressData.created_at,
       lastActivity: progressData.last_activity,
       completedAt: progressData.completed_at,
