@@ -17,6 +17,14 @@ function isPlaceholderUrl(url) {
          url.includes('placeholder');
 }
 
+// Check if URL is a direct video file (use native video element for these)
+function isDirectVideoFile(url) {
+  if (!url) return false;
+  const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+  const lowercaseUrl = url.toLowerCase();
+  return videoExtensions.some(ext => lowercaseUrl.includes(ext));
+}
+
 // Get a consistent fallback video based on the original URL
 function getFallbackVideo(originalUrl) {
   // Use a hash of the URL to consistently pick the same fallback video
@@ -35,10 +43,10 @@ function VideoPlayer({ url, onEnded, onProgress }) {
   // Use fallback if URL is a placeholder
   const videoUrl = isPlaceholderUrl(url) ? getFallbackVideo(url) : url;
 
-  // Use native video element for local files (more reliable)
-  const isLocalVideo = videoUrl.startsWith('/videos/');
+  // Use native video element for local files AND direct video URLs (more reliable than ReactPlayer)
+  const useNativeVideo = videoUrl.startsWith('/videos/') || isDirectVideoFile(videoUrl);
   
-  if (isLocalVideo) {
+  if (useNativeVideo) {
     return (
       <div className="video-container">
         <video
@@ -48,7 +56,7 @@ function VideoPlayer({ url, onEnded, onProgress }) {
           height="100%"
           onEnded={onEnded}
           onTimeUpdate={(e) => {
-            if (onProgress) {
+            if (onProgress && e.target.duration) {
               const progress = {
                 played: e.target.currentTime / e.target.duration,
                 playedSeconds: e.target.currentTime,
@@ -58,11 +66,13 @@ function VideoPlayer({ url, onEnded, onProgress }) {
           }}
           controlsList="nodownload"
           style={{ maxHeight: '500px', backgroundColor: '#000' }}
+          playsInline
         />
       </div>
     );
   }
 
+  // Use ReactPlayer for YouTube, Vimeo, etc.
   return (
     <div className="video-container">
       <ReactPlayer
