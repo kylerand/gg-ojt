@@ -11,6 +11,44 @@ export const getProgress = async (req, res, next) => {
     if (!progress) {
       return res.status(404).json({ message: 'Progress not found' });
     }
+
+    // Calculate step-based completion percentage
+    try {
+      const modules = await ModuleLoader.getAllModules();
+      const totalSteps = modules.reduce((sum, m) => sum + (m.steps?.length || 0), 0);
+      const totalModules = modules.length;
+
+      // Create a map of module id to step count
+      const moduleStepCounts = {};
+      modules.forEach(m => {
+        moduleStepCounts[m.id] = m.steps?.length || 0;
+      });
+
+      // Count completed steps
+      let completedSteps = 0;
+      let completedModulesCount = 0;
+
+      Object.entries(progress.moduleProgress || {}).forEach(([moduleId, modProgress]) => {
+        if (modProgress.status === 'completed') {
+          completedSteps += moduleStepCounts[moduleId] || 0;
+          completedModulesCount++;
+        } else if (modProgress.completedSteps) {
+          completedSteps += modProgress.completedSteps.length;
+        }
+      });
+
+      // Add completion stats to response
+      progress.completionPercentage = totalSteps > 0 
+        ? Math.round((completedSteps / totalSteps) * 100) 
+        : 0;
+      progress.totalSteps = totalSteps;
+      progress.completedStepsCount = completedSteps;
+      progress.totalModules = totalModules;
+      progress.completedModulesCount = completedModulesCount;
+    } catch (moduleError) {
+      console.error('Could not calculate step completion:', moduleError);
+      // Continue without step stats if module loading fails
+    }
     
     res.json(progress);
   } catch (error) {

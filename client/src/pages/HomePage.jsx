@@ -80,9 +80,14 @@ function HomePage() {
 
   if (loading) return <LoadingSpinner />;
 
-  const completedCount = progress?.completedModules?.length || 0;
-  const totalModules = modules.length;
-  const completionPercentage = (completedCount / totalModules) * 100;
+  // Use step-based completion from backend if available
+  const completionPercentage = progress?.completionPercentage ?? 
+    ((progress?.completedModules?.length || 0) / (modules.length || 1)) * 100;
+  
+  const totalModules = progress?.totalModules || modules.length;
+  const completedModulesCount = progress?.completedModulesCount ?? progress?.completedModules?.length ?? 0;
+  const totalSteps = progress?.totalSteps;
+  const completedStepsCount = progress?.completedStepsCount;
 
   return (
     <div>
@@ -130,8 +135,14 @@ function HomePage() {
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
-        <p style={{ marginTop: '0.75rem', color: 'var(--text-secondary)' }}>
-          {completedCount} of {totalModules} modules completed ({completionPercentage.toFixed(0)}%)
+        <p style={{ marginTop: '0.75rem', fontWeight: '600' }}>
+          {completionPercentage.toFixed(0)}% Complete
+        </p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+          {totalSteps !== undefined 
+            ? `${completedStepsCount}/${totalSteps} steps • ${completedModulesCount}/${totalModules} modules`
+            : `${completedModulesCount} of ${totalModules} modules completed`
+          }
         </p>
       </div>
 

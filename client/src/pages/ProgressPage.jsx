@@ -33,9 +33,14 @@ function ProgressPage() {
     return <LoadingSpinner />;
   }
 
-  const totalModules = 7; // From cart config
-  const completedCount = progress.completedModules.length;
-  const completionPercentage = (completedCount / totalModules) * 100;
+  // Use step-based completion from backend if available, fallback to module-based
+  const completionPercentage = progress.completionPercentage ?? 
+    ((progress.completedModules.length / (progress.totalModules || 7)) * 100);
+  
+  const totalModules = progress.totalModules || 7;
+  const completedModulesCount = progress.completedModulesCount ?? progress.completedModules.length;
+  const totalSteps = progress.totalSteps;
+  const completedStepsCount = progress.completedStepsCount;
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -52,7 +57,13 @@ function ProgressPage() {
             <div className="progress-fill" style={{ width: `${completionPercentage}%` }} />
           </div>
           <p style={{ marginTop: '1rem', fontSize: '1.125rem' }}>
-            {completedCount} of {totalModules} modules completed ({completionPercentage.toFixed(0)}%)
+            <strong>{completionPercentage.toFixed(0)}% Complete</strong>
+          </p>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+            {totalSteps !== undefined 
+              ? `${completedStepsCount}/${totalSteps} steps completed • ${completedModulesCount}/${totalModules} modules`
+              : `${completedModulesCount} of ${totalModules} modules completed`
+            }
           </p>
         </div>
       </Card>
