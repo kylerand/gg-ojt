@@ -32,6 +32,19 @@ function TraineeManagement() {
   const loadTrainees = async () => {
     try {
       const response = await getAdminTrainees();
+      console.log('[TraineeManagement] Loaded trainees:', response.data);
+      // Log completion data for first trainee
+      if (response.data.length > 0) {
+        const first = response.data[0];
+        console.log('[TraineeManagement] First trainee completion data:', {
+          name: first.traineeName,
+          completionPercentage: first.completionPercentage,
+          totalSteps: first.totalSteps,
+          completedStepsCount: first.completedStepsCount,
+          totalModules: first.totalModules,
+          completedModulesCount: first.completedModulesCount,
+        });
+      }
       setTrainees(response.data);
     } catch (error) {
       console.error('Failed to load trainees:', error);
@@ -74,13 +87,16 @@ function TraineeManagement() {
   const getCompletionPercentage = (trainee) => {
     // Prefer backend-calculated value
     if (trainee.completionPercentage !== undefined) {
+      console.log(`[getCompletionPercentage] ${trainee.traineeName}: using backend value ${trainee.completionPercentage}%`);
       return trainee.completionPercentage;
     }
     // Fallback: calculate locally
     const totalModules = trainee.totalModules || modules.length || 1;
     const moduleProgress = trainee.moduleProgress || {};
     const completed = Object.values(moduleProgress).filter(m => m.status === 'completed').length;
-    return Math.round((completed / totalModules) * 100);
+    const pct = Math.round((completed / totalModules) * 100);
+    console.log(`[getCompletionPercentage] ${trainee.traineeName}: fallback calculation ${pct}%`);
+    return pct;
   };
 
   const getTraineeStatus = (trainee) => {

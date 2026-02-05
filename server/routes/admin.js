@@ -33,10 +33,13 @@ router.get('/trainees', async (req, res, next) => {
     const totalSteps = modules.reduce((sum, m) => sum + (m.steps?.length || 0), 0);
     const totalModules = modules.length;
 
+    console.log(`[Admin Trainees] Total modules: ${totalModules}, Total steps: ${totalSteps}`);
+
     // Create a map of module id to step count for quick lookup
     const moduleStepCounts = {};
     modules.forEach(m => {
       moduleStepCounts[m.id] = m.steps?.length || 0;
+      console.log(`  Module ${m.id}: ${m.steps?.length || 0} steps`);
     });
 
     // Add completion percentage to each trainee based on steps completed
@@ -55,12 +58,16 @@ router.get('/trainees', async (req, res, next) => {
           completedSteps += modProgress.completedSteps.length;
         }
       });
+
+      const completionPercentage = totalSteps > 0 
+        ? Math.round((completedSteps / totalSteps) * 100) 
+        : 0;
+
+      console.log(`[Admin Trainees] ${trainee.traineeName}: ${completedSteps}/${totalSteps} steps = ${completionPercentage}%`);
       
       return {
         ...trainee,
-        completionPercentage: totalSteps > 0 
-          ? Math.round((completedSteps / totalSteps) * 100) 
-          : 0,
+        completionPercentage,
         totalModules,
         totalSteps,
         completedModulesCount,

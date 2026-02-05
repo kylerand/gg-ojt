@@ -18,6 +18,8 @@ export const getProgress = async (req, res, next) => {
       const totalSteps = modules.reduce((sum, m) => sum + (m.steps?.length || 0), 0);
       const totalModules = modules.length;
 
+      console.log(`[getProgress] ${traineeId}: Total modules: ${totalModules}, Total steps: ${totalSteps}`);
+
       // Create a map of module id to step count
       const moduleStepCounts = {};
       modules.forEach(m => {
@@ -29,6 +31,7 @@ export const getProgress = async (req, res, next) => {
       let completedModulesCount = 0;
 
       Object.entries(progress.moduleProgress || {}).forEach(([moduleId, modProgress]) => {
+        console.log(`[getProgress] ${traineeId} - Module ${moduleId}: status=${modProgress.status}, completedSteps=${modProgress.completedSteps?.length || 0}`);
         if (modProgress.status === 'completed') {
           completedSteps += moduleStepCounts[moduleId] || 0;
           completedModulesCount++;
@@ -45,6 +48,8 @@ export const getProgress = async (req, res, next) => {
       progress.completedStepsCount = completedSteps;
       progress.totalModules = totalModules;
       progress.completedModulesCount = completedModulesCount;
+
+      console.log(`[getProgress] ${traineeId}: ${completedSteps}/${totalSteps} steps = ${progress.completionPercentage}%`);
     } catch (moduleError) {
       console.error('Could not calculate step completion:', moduleError);
       // Continue without step stats if module loading fails
