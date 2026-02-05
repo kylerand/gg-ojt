@@ -47,15 +47,23 @@ router.get('/trainees', async (req, res, next) => {
       let completedSteps = 0;
       let completedModulesCount = 0;
       
+      // Log the raw module progress for debugging
+      console.log(`[Admin Trainees] ${trainee.traineeName} moduleProgress:`, JSON.stringify(trainee.moduleProgress, null, 2));
+      
       // Count completed steps across all modules
       Object.entries(trainee.moduleProgress || {}).forEach(([moduleId, modProgress]) => {
+        console.log(`  ${moduleId}: status=${modProgress.status}, completedSteps=${JSON.stringify(modProgress.completedSteps)}`);
+        
         if (modProgress.status === 'completed') {
           // If module is completed, count all its steps
-          completedSteps += moduleStepCounts[moduleId] || 0;
+          const stepCount = moduleStepCounts[moduleId] || 0;
+          completedSteps += stepCount;
           completedModulesCount++;
-        } else if (modProgress.completedSteps) {
+          console.log(`    -> Module completed, adding ${stepCount} steps`);
+        } else if (modProgress.completedSteps && Array.isArray(modProgress.completedSteps)) {
           // Otherwise count individual completed steps
           completedSteps += modProgress.completedSteps.length;
+          console.log(`    -> In progress, adding ${modProgress.completedSteps.length} steps`);
         }
       });
 
