@@ -334,13 +334,29 @@ function StepPage() {
             </p>
           )}
 
+          {/* Content - Main description/overview */}
+          {currentStep.content && (
+            <div style={{ marginTop: '2rem' }}>
+              <div style={{ 
+                whiteSpace: 'pre-line', 
+                lineHeight: '1.8',
+                fontSize: '1.05rem',
+                color: 'var(--text-primary)'
+              }}>
+                {currentStep.content}
+              </div>
+            </div>
+          )}
+
           {/* Instructions */}
-          <div style={{ marginTop: '2rem' }}>
-            <h3>Instructions</h3>
-            <p style={{ whiteSpace: 'pre-line', lineHeight: '1.8', marginTop: '1rem' }}>
-              {currentStep.instructions}
-            </p>
-          </div>
+          {currentStep.instructions && (
+            <div style={{ marginTop: '2rem' }}>
+              <h3>Instructions</h3>
+              <p style={{ whiteSpace: 'pre-line', lineHeight: '1.8', marginTop: '1rem' }}>
+                {currentStep.instructions}
+              </p>
+            </div>
+          )}
 
           {/* Resources Panel (replaces inline tools/materials) */}
           <ResourcesPanel step={currentStep} />
