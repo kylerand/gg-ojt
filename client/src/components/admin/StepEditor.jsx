@@ -8,6 +8,7 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
     title: step.title || '',
     content: step.content || '',
     videoUrl: step.videoUrl || '',
+    hasVideo: step.hasVideo !== undefined ? step.hasVideo : !!step.videoUrl,
     safetyWarnings: step.safetyWarnings || [],
     tools: step.tools || [],
     materials: step.materials || [],
@@ -46,7 +47,15 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
       alert('Please enter a step title');
       return;
     }
-    onSave(formData);
+    
+    // If hasVideo is false, clear video-related fields
+    const dataToSave = { ...formData };
+    if (!formData.hasVideo) {
+      dataToSave.videoUrl = '';
+      dataToSave.requiresVideoCompletion = false;
+    }
+    
+    onSave(dataToSave);
   };
 
   return (
@@ -82,37 +91,56 @@ function StepEditor({ step, onSave, onCancel, onDelete }) {
           />
         </div>
 
-        {/* Video Upload */}
+        {/* Step Type Toggle */}
         <div className="form-group">
-          <label className="form-label">Training Video</label>
-          <VideoUploader
-            currentVideoUrl={formData.videoUrl}
-            onUploadComplete={(url) => handleChange('videoUrl', url)}
-            onRemove={() => handleChange('videoUrl', '')}
-          />
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input
+              type="checkbox"
+              checked={formData.hasVideo}
+              onChange={(e) => handleChange('hasVideo', e.target.checked)}
+              style={{ width: '18px', height: '18px' }}
+            />
+            <span>This step includes a video</span>
+          </label>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem', marginLeft: '1.75rem' }}>
+            {formData.hasVideo ? 'Upload a training video for this step' : 'This step will be text-only (no video component)'}
+          </p>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">
-              <input
-                type="checkbox"
-                checked={formData.requiresVideoCompletion}
-                onChange={(e) => handleChange('requiresVideoCompletion', e.target.checked)}
+        {/* Video Upload - Only show if hasVideo is true */}
+        {formData.hasVideo && (
+          <>
+            <div className="form-group">
+              <label className="form-label">Training Video</label>
+              <VideoUploader
+                currentVideoUrl={formData.videoUrl}
+                onUploadComplete={(url) => handleChange('videoUrl', url)}
+                onRemove={() => handleChange('videoUrl', '')}
               />
-              {' '}Require video completion
-            </label>
-          </div>
-          <div className="form-group">
-            <label className="form-label">
-              <input
-                type="checkbox"
-                checked={formData.requiresConfirmation}
-                onChange={(e) => handleChange('requiresConfirmation', e.target.checked)}
-              />
-              {' '}Require step confirmation
-            </label>
-          </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  checked={formData.requiresVideoCompletion}
+                  onChange={(e) => handleChange('requiresVideoCompletion', e.target.checked)}
+                />
+                <span>Require video completion to proceed</span>
+              </label>
+            </div>
+          </>
+        )}
+
+        <div className="form-group">
+          <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input
+              type="checkbox"
+              checked={formData.requiresConfirmation}
+              onChange={(e) => handleChange('requiresConfirmation', e.target.checked)}
+            />
+            <span>Require step confirmation</span>
+          </label>
         </div>
 
         {/* Safety Warnings */}

@@ -556,7 +556,11 @@ function ModuleEditor({ module, onSave, onCancel, onDelete }) {
                       <div className="step-preview-content">
                         <h4>{step.title}</h4>
                         <div className="step-preview-meta">
-                          {step.videoUrl && <span className="meta-badge">📹 Video</span>}
+                          {step.hasVideo || step.videoUrl ? (
+                            <span className="meta-badge">📹 Video</span>
+                          ) : (
+                            <span className="meta-badge">📝 Text Only</span>
+                          )}
                           {step.safetyWarnings?.length > 0 && (
                             <span className="meta-badge warning">⚠️ {step.safetyWarnings.length} warnings</span>
                           )}
