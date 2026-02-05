@@ -27,7 +27,7 @@ const upload = multer({
 router.get('/trainees', async (req, res, next) => {
   try {
     const allProgress = await ProgressTracker.getAllProgress();
-    const modules = await ModuleLoader.getAll();
+    const modules = await ModuleLoader.getAllModules();
     const totalModules = modules.length;
 
     // Add completion percentage to each trainee
