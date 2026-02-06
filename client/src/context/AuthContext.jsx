@@ -5,8 +5,10 @@ const getApiUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // If running on Vercel (production), use Railway backend
-  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+  // If running on Vercel (production) or custom domain, use Railway backend
+  if (typeof window !== 'undefined' && 
+      (window.location.hostname.includes('vercel.app') || 
+       window.location.hostname.includes('golfingarage.com'))) {
     return 'https://gg-ojt-production.up.railway.app';
   }
   // Local development
