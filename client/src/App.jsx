@@ -8,6 +8,7 @@ import ModuleOverviewPage from './pages/ModuleOverviewPage';
 import StepPage from './pages/StepPage';
 import ProgressPage from './pages/ProgressPage';
 import AdminPage from './pages/AdminPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route component
@@ -38,6 +39,7 @@ function AppRoutes() {
       <main className="main-content">
         <Routes>
           <Route path="/" element={isAuthenticated ? <Navigate to="/home" replace /> : <LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/home" element={
             <ProtectedRoute>
               <HomePage />

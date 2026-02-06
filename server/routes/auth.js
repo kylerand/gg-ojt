@@ -171,6 +171,23 @@ router.post('/verify', authenticateToken, (req, res) => {
   res.json({ valid: true, user: req.user });
 });
 
+// POST /api/auth/update-password - Update password using recovery token from email
+router.post('/update-password', authenticateToken, async (req, res, next) => {
+  try {
+    const { password } = req.body;
+
+    if (!password || password.length < 6) {
+      throw new AppError('Password must be at least 6 characters', 400);
+    }
+
+    // Use the user from the recovery token to update password
+    const result = await AuthService.updatePasswordWithToken(req.user.id, password);
+    res.json(result);
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+});
+
 // POST /api/auth/refresh - Refresh access token
 router.post('/refresh', async (req, res, next) => {
   try {

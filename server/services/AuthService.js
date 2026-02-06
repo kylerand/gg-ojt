@@ -172,8 +172,16 @@ class AuthService {
 
       // Get our user profile
       const userProfile = await this.getUserByAuthId(user.id);
+      
+      // If no profile exists, this might be a recovery token for a user
+      // Return minimal info to allow password reset
       if (!userProfile) {
-        return null;
+        return {
+          id: user.id,
+          authId: user.id,
+          role: 'trainee',
+          isRecoveryToken: true,
+        };
       }
 
       return {
@@ -230,6 +238,30 @@ class AuthService {
     }
 
     return { success: true, message: 'Password changed successfully' };
+  }
+
+  async updatePasswordWithToken(authId, newPassword) {
+    this._ensureSupabase();
+    // This is called when user has a valid recovery token
+    // The authId comes from the JWT token (which is the Supabase auth user id)
+    
+    // Update password using admin API
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      authId,
+      { password: newPassword }
+    );
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+
+    // Update our users table with password reset timestamp
+    await supabase
+      .from('users')
+      .update({ password_reset_at: new Date().toISOString() })
+      .eq('auth_id', authId);
+
+    return { success: true, message: 'Password updated successfully' };
   }
 
   async resetPassword(userId, newPassword) {
