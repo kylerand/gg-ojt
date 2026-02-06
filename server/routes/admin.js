@@ -157,14 +157,12 @@ router.post('/trainees/:traineeId/reset-password', async (req, res, next) => {
     const { traineeId } = req.params;
     const { newPassword } = req.body;
     
-    if (!newPassword || newPassword.length < 4) {
-      throw new AppError('Password must be at least 4 characters', 400);
+    if (!newPassword || newPassword.length < 6) {
+      throw new AppError('Password must be at least 6 characters', 400);
     }
     
-    // Simple hash for demo (in production, use bcrypt)
-    const simpleHash = Buffer.from(newPassword).toString('base64');
-    
-    const result = await ProgressTracker.resetPassword(traineeId, simpleHash);
+    // Use AuthService to reset password in Supabase Auth
+    const result = await AuthService.resetPassword(traineeId, newPassword);
     res.json(result);
   } catch (error) {
     next(new AppError(error.message, error.statusCode || 500));
