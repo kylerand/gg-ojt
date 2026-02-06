@@ -114,26 +114,36 @@ class AuthService {
   // ============================================
   async login(employeeId, password) {
     this._ensureSupabase();
+    console.log(`🔐 Login attempt for employeeId: ${employeeId}`);
+    
     // Get user profile to find their email
     const userProfile = await this.getUser(employeeId);
     
     if (!userProfile) {
+      console.log(`❌ User not found in database for employeeId: ${employeeId}`);
       throw new Error('Invalid credentials');
     }
 
+    console.log(`✅ User found: ${userProfile.email}`);
+
     if (userProfile.isActive === false) {
+      console.log(`❌ Account is disabled for: ${employeeId}`);
       throw new Error('Account is disabled');
     }
 
     // Sign in with Supabase Auth
+    console.log(`🔑 Attempting Supabase Auth for email: ${userProfile.email}`);
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: userProfile.email,
       password,
     });
 
     if (authError) {
+      console.log(`❌ Supabase Auth failed: ${authError.message}`);
       throw new Error('Invalid credentials');
     }
+
+    console.log(`✅ Supabase Auth successful for: ${employeeId}`);
 
     // Update last login
     await supabase
