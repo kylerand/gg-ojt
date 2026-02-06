@@ -5,6 +5,7 @@ import TraineeManagement from '../components/admin/TraineeManagement';
 import QAManagement from '../components/admin/QAManagement';
 import AnalyticsDashboard from '../components/admin/AnalyticsDashboard';
 import ModuleManagement from '../components/admin/ModuleManagement';
+import { getUsers, updateUserRole } from '../services/api';
 
 const ADMIN_STATE_KEY = 'gg-admin-state';
 
@@ -123,6 +124,11 @@ function SettingsPanel() {
   });
   const [hasChanges, setHasChanges] = useState(false);
   const [saveStatus, setSaveStatus] = useState(null);
+  
+  // User management state
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userUpdateStatus, setUserUpdateStatus] = useState(null);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -130,7 +136,38 @@ function SettingsPanel() {
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings));
     }
+    
+    // Load users
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const response = await getUsers();
+      setUsers(response.data || []);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      setUserUpdateStatus({ userId, status: 'saving' });
+      await updateUserRole(userId, newRole);
+      setUsers(prev => prev.map(user => 
+        user.id === userId ? { ...user, role: newRole } : user
+      ));
+      setUserUpdateStatus({ userId, status: 'saved' });
+      setTimeout(() => setUserUpdateStatus(null), 2000);
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      setUserUpdateStatus({ userId, status: 'error', message: error.message });
+      setTimeout(() => setUserUpdateStatus(null), 3000);
+    }
+  };
 
   const handleSettingChange = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -258,6 +295,70 @@ function SettingsPanel() {
             <span className="save-status warning">Unsaved changes</span>
           )}
         </div>
+      </div>
+
+      <div className="settings-section">
+        <h3>User Management</h3>
+        <p className="settings-description">Manage user roles to control access levels. Admins have full access, supervisors can sign off on training, and trainees can complete training modules.</p>
+        
+        {usersLoading ? (
+          <div className="users-loading">Loading users...</div>
+        ) : users.length === 0 ? (
+          <div className="users-empty">No users found</div>
+        ) : (
+          <div className="users-table-container">
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Employee ID</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(user => (
+                  <tr key={user.id}>
+                    <td>{user.firstName} {user.lastName}</td>
+                    <td>{user.employeeId || '-'}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <select
+                        className="role-select"
+                        value={user.role || 'trainee'}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        disabled={userUpdateStatus?.userId === user.id && userUpdateStatus?.status === 'saving'}
+                      >
+                        <option value="trainee">Trainee</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
+                    <td className="status-cell">
+                      {userUpdateStatus?.userId === user.id && (
+                        <>
+                          {userUpdateStatus.status === 'saving' && <span className="status-saving">Saving...</span>}
+                          {userUpdateStatus.status === 'saved' && <span className="status-saved">✓ Saved</span>}
+                          {userUpdateStatus.status === 'error' && <span className="status-error">Error</span>}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        <button 
+          className="settings-btn secondary"
+          onClick={loadUsers}
+          disabled={usersLoading}
+          style={{ marginTop: '1rem' }}
+        >
+          🔄 Refresh Users
+        </button>
       </div>
 
       <div className="settings-section">

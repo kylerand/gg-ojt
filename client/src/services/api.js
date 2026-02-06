@@ -88,4 +88,8 @@ export const setModuleProgress = (traineeId, moduleId, progressData) =>
 export const resetModuleProgress = (traineeId, moduleId) =>
   api.delete(`/admin/trainees/${traineeId}/modules/${moduleId}`);
 
+// Admin - User Management
+export const getUsers = () => api.get('/admin/users');
+export const updateUserRole = (userId, role) => api.put(`/admin/users/${userId}/role`, { role });
+
 export default api;

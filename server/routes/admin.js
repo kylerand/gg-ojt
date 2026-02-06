@@ -3,6 +3,7 @@ import multer from 'multer';
 import ProgressTracker from '../services/ProgressTracker.js';
 import ModuleLoader from '../services/ModuleLoader.js';
 import StorageService from '../services/StorageService.js';
+import AuthService from '../services/AuthService.js';
 import { AppError } from '../middleware/errorHandler.js';
 
 const router = express.Router();
@@ -23,6 +24,40 @@ const upload = multer({
   }
 });
 
+// ============================================
+// USER MANAGEMENT
+// ============================================
+
+// GET /api/admin/users - Get all users
+router.get('/users', async (req, res, next) => {
+  try {
+    const users = await AuthService.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+});
+
+// PUT /api/admin/users/:userId/role - Update user role
+router.put('/users/:userId/role', async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+    
+    if (!role || !['trainee', 'supervisor', 'admin'].includes(role)) {
+      throw new AppError('Invalid role. Must be trainee, supervisor, or admin', 400);
+    }
+    
+    const user = await AuthService.updateUser(userId, { role });
+    res.json({ success: true, user });
+  } catch (error) {
+    next(new AppError(error.message, error.statusCode || 500));
+  }
+});
+
+// ============================================
+// TRAINEE MANAGEMENT
+// ============================================
 // GET /api/admin/trainees - Get all trainees with full details
 router.get('/trainees', async (req, res, next) => {
   try {
