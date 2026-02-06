@@ -28,8 +28,17 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // CORS configuration for production
+// CLIENT_URL can be a single URL or comma-separated list
+const getAllowedOrigins = () => {
+  if (process.env.CLIENT_URL) {
+    // Support comma-separated list of origins
+    return process.env.CLIENT_URL.split(',').map(url => url.trim());
+  }
+  return ['http://localhost:3000', 'http://localhost:5173'];
+};
+
 const corsOptions = {
-  origin: process.env.CLIENT_URL || ['http://localhost:3000', 'http://localhost:5173'],
+  origin: getAllowedOrigins(),
   credentials: true,
 };
 
