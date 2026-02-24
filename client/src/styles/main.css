@@ -367,6 +367,42 @@ body {
   padding: 1.5rem;
 }
 
+/* Learning Path Card */
+.learning-path-card {
+  background-color: var(--surface-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 2px solid var(--primary-color);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.learning-path-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--secondary-color);
+}
+
+.learning-path-card-header {
+  position: relative;
+}
+
+.learning-path-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 1;
+}
+
 .module-title {
   font-size: 1.25rem;
   font-weight: 600;

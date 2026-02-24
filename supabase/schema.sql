@@ -153,6 +153,38 @@ CREATE INDEX IF NOT EXISTS idx_questions_module ON questions(module_id);
 CREATE INDEX IF NOT EXISTS idx_questions_status ON questions(status);
 
 -- ============================================
+-- MODULES TABLE (used when Supabase is configured)
+-- ============================================
+-- Note: modules are stored as JSON files by default.
+-- This table is used when SUPABASE_URL and SUPABASE_SERVICE_KEY are set.
+
+-- ============================================
+-- LEARNING PATHS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS learning_paths (
+  id VARCHAR(100) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT DEFAULT '',
+  estimated_time VARCHAR(50) DEFAULT '',
+  thumbnail_url TEXT DEFAULT '',
+  module_ids JSONB DEFAULT '[]',
+  knowledge_checks JSONB DEFAULT '[]',
+  is_active BOOLEAN DEFAULT TRUE,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_learning_paths_active ON learning_paths(is_active);
+CREATE INDEX IF NOT EXISTS idx_learning_paths_sort ON learning_paths(sort_order);
+
+ALTER TABLE learning_paths ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service role full access" ON learning_paths FOR ALL USING (true);
+
+CREATE TRIGGER update_learning_paths_updated_at BEFORE UPDATE ON learning_paths
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
 -- AUTO-UPDATE TIMESTAMPS
 -- ============================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()

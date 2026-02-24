@@ -15,6 +15,7 @@ const { default: progressRouter } = await import('./routes/progress.js');
 const { default: traineesRouter } = await import('./routes/trainees.js');
 const { default: adminRouter } = await import('./routes/admin.js');
 const { default: authRouter } = await import('./routes/auth.js');
+const { default: learningPathsRouter } = await import('./routes/learning-paths.js');
 
 // Import middleware
 const { errorHandler } = await import('./middleware/errorHandler.js');
@@ -52,6 +53,7 @@ app.use(logger);
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/modules', modulesRouter);
+app.use('/api/learning-paths', learningPathsRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/trainees', traineesRouter);
 app.use('/api/admin', adminRouter);

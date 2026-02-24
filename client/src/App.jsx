@@ -9,6 +9,7 @@ import StepPage from './pages/StepPage';
 import ProgressPage from './pages/ProgressPage';
 import AdminPage from './pages/AdminPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import LearningPathPage from './pages/LearningPathPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 
 // Protected Route component
@@ -58,6 +59,11 @@ function AppRoutes() {
           <Route path="/progress" element={
             <ProtectedRoute>
               <ProgressPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/learning-path/:learningPathId" element={
+            <ProtectedRoute>
+              <LearningPathPage />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={

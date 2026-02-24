@@ -1,0 +1,38 @@
+{
+  "id": "01-foundational-training",
+  "title": "Foundational Training",
+  "description": "Complete the core foundational modules required for all assembly technicians. Covers safety, frame/chassis, and basic orientation before moving to specialized systems.",
+  "estimatedTime": "3 hours",
+  "thumbnailUrl": "/images/modules/orientation.png",
+  "moduleIds": ["01-orientation", "02-frame-chassis"],
+  "knowledgeChecks": [
+    {
+      "id": "lp-check-1",
+      "question": "Before starting any assembly work, what is the most important first step?",
+      "type": "multiple-choice",
+      "options": [
+        "Jump straight into assembly to save time",
+        "Complete orientation, wear proper PPE, and understand your workspace",
+        "Ask a coworker to show you what to do",
+        "Review only the frame assembly steps"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Proper orientation ensures you know PPE requirements, safety zones, emergency procedures, and workspace layout before touching any components."
+    },
+    {
+      "id": "lp-check-2",
+      "question": "What is the correct order for frame and chassis assembly?",
+      "type": "multiple-choice",
+      "options": [
+        "Electrical first, then frame",
+        "Body panels first, then frame",
+        "Frame structure first, then mount sub-components",
+        "Any order is acceptable"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The main frame structure must always be assembled and verified before mounting any sub-components. This ensures structural integrity throughout the build."
+    }
+  ],
+  "isActive": true,
+  "sortOrder": 1
+}
