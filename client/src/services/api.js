@@ -84,6 +84,13 @@ export const clearCache = () => api.post('/admin/cache/clear');
 export const createModule = (moduleData) => api.post('/admin/modules', moduleData);
 export const updateModule = (moduleId, moduleData) => api.put(`/admin/modules/${moduleId}`, moduleData);
 export const deleteModule = (moduleId) => api.delete(`/admin/modules/${moduleId}`);
+export const syncModules = (force = false) => api.post('/admin/modules/sync', { force });
+
+// Admin - Learning Paths
+export const createLearningPath = (pathData) => api.post('/admin/learning-paths', pathData);
+export const updateLearningPath = (pathId, pathData) => api.put(`/admin/learning-paths/${pathId}`, pathData);
+export const deleteLearningPath = (pathId) => api.delete(`/admin/learning-paths/${pathId}`);
+export const syncLearningPaths = (force = false) => api.post('/admin/learning-paths/sync', { force });
 
 // Admin - Trainees
 export const updateTrainee = (traineeId, data) => api.put(`/admin/trainees/${traineeId}`, data);

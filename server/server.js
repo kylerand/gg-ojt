@@ -24,6 +24,7 @@ const { logger } = await import('./middleware/logger.js');
 // Import services
 const { default: AuthService } = await import('./services/AuthService.js');
 const { default: ModuleLoader } = await import('./services/ModuleLoader.js');
+const { default: LearningPathLoader } = await import('./services/LearningPathLoader.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -76,6 +77,8 @@ const startServer = async () => {
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
       console.log('📦 Checking module sync with Supabase...');
       await ModuleLoader.syncModulesToSupabase();
+      console.log('📦 Checking learning path sync with Supabase...');
+      await LearningPathLoader.syncPathsToSupabase();
     }
     
     app.listen(PORT, () => {
