@@ -466,6 +466,16 @@ router.post('/modules/sync', async (req, res, next) => {
 // LEARNING PATH MANAGEMENT ENDPOINTS
 // =====================================================
 
+// GET /api/admin/learning-paths - List all learning paths (including inactive)
+router.get('/learning-paths', async (req, res, next) => {
+  try {
+    const paths = await LearningPathLoader.getAllRawPaths();
+    res.json(paths);
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+});
+
 // POST /api/admin/learning-paths/sync - Sync learning paths from files to database
 // NOTE: registered before /:id routes so "sync" is not treated as a path ID
 router.post('/learning-paths/sync', async (req, res, next) => {

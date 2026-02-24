@@ -5,6 +5,7 @@ import TraineeManagement from '../components/admin/TraineeManagement';
 import QAManagement from '../components/admin/QAManagement';
 import AnalyticsDashboard from '../components/admin/AnalyticsDashboard';
 import ModuleManagement from '../components/admin/ModuleManagement';
+import LearningPathManagement from '../components/admin/LearningPathManagement';
 import { getUsers, updateUserRole } from '../services/api';
 
 const ADMIN_STATE_KEY = 'gg-admin-state';
@@ -16,7 +17,7 @@ function AdminPage() {
   // Get initial tab from URL params or localStorage
   const getInitialTab = () => {
     const urlTab = searchParams.get('tab');
-    if (urlTab && ['dashboard', 'modules', 'trainees', 'qa', 'settings'].includes(urlTab)) {
+    if (urlTab && ['dashboard', 'modules', 'learning-paths', 'trainees', 'qa', 'settings'].includes(urlTab)) {
       return urlTab;
     }
     const savedState = localStorage.getItem(ADMIN_STATE_KEY);
@@ -36,6 +37,7 @@ function AdminPage() {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'modules', label: 'Modules', icon: '📚' },
+    { id: 'learning-paths', label: 'Learning Paths', icon: '🛤️' },
     { id: 'trainees', label: 'Trainees', icon: '👥' },
     { id: 'qa', label: 'Q&A', icon: '💬' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
@@ -54,7 +56,7 @@ function AdminPage() {
   // Handle browser back/forward
   useEffect(() => {
     const urlTab = searchParams.get('tab');
-    if (urlTab && urlTab !== activeTab && ['dashboard', 'modules', 'trainees', 'qa', 'settings'].includes(urlTab)) {
+    if (urlTab && urlTab !== activeTab && ['dashboard', 'modules', 'learning-paths', 'trainees', 'qa', 'settings'].includes(urlTab)) {
       setActiveTab(urlTab);
     }
   }, [searchParams]);
@@ -69,6 +71,8 @@ function AdminPage() {
         return <AnalyticsDashboard />;
       case 'modules':
         return <ModuleManagement />;
+      case 'learning-paths':
+        return <LearningPathManagement />;
       case 'trainees':
         return <TraineeManagement />;
       case 'qa':

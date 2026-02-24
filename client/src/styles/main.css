@@ -5873,3 +5873,166 @@ body {
   border-top: 1px solid var(--border-color);
   padding-top: 1.5rem;
 }
+
+/* ============================================================
+   LEARNING PATH EDITOR (admin)
+   ============================================================ */
+
+.learning-path-editor {
+  padding: 1.5rem;
+}
+
+.learning-path-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.learning-path-editor-header h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.4rem;
+}
+
+.learning-path-editor-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.learning-path-editor-form .form-section {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.learning-path-editor-form .form-section h3 {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.learning-path-editor-form .form-section h4 {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Selected module ordering list */
+.lp-module-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.lp-module-order-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-secondary, #f5f5f5);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+.lp-module-order-num {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.lp-module-order-title {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.lp-module-order-btns {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.lp-order-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+
+.lp-order-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+.lp-order-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.lp-order-btn.remove:hover:not(:disabled) {
+  background: var(--danger-color, #e53e3e);
+  border-color: var(--danger-color, #e53e3e);
+  color: #fff;
+}
+
+/* Module picker */
+.lp-module-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.lp-module-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lp-module-picker-item:hover {
+  background: var(--bg-secondary, #f5f5f5);
+}
+
+.lp-module-picker-item.selected {
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+}
+
+.lp-module-picker-title {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.lp-module-picker-id {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+/* Inactive badge */
+.badge-inactive {
+  background: #fbbf24;
+  color: #78350f;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}

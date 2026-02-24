@@ -87,6 +87,8 @@ export const deleteModule = (moduleId) => api.delete(`/admin/modules/${moduleId}
 export const syncModules = (force = false) => api.post('/admin/modules/sync', { force });
 
 // Admin - Learning Paths
+export const getAdminLearningPaths = () => api.get('/admin/learning-paths');
+export const getAdminLearningPath = (pathId) => api.get(`/admin/learning-paths/${pathId}`);
 export const createLearningPath = (pathData) => api.post('/admin/learning-paths', pathData);
 export const updateLearningPath = (pathId, pathData) => api.put(`/admin/learning-paths/${pathId}`, pathData);
 export const deleteLearningPath = (pathId) => api.delete(`/admin/learning-paths/${pathId}`);
