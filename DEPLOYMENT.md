@@ -1,63 +1,81 @@
 # Deployment Guide
 
-This guide covers deploying the Golfin Garage OJT system to the cloud. We recommend using **Railway** for the backend and **Vercel** for the frontend for an easy, low-cost deployment.
+This guide covers deploying the Golfin Garage OJT system to the cloud. We recommend using **Railway** for the backend and **Vercel** for the frontend.
 
 ## Cost Estimate
+- **Supabase**: Free tier (up to 500 MB database, 1 GB file storage)
 - **Railway**: Free tier includes $5/month credit (usually enough for small apps)
 - **Vercel**: Free for personal/hobby projects
-- **Total**: $0/month for small scale deployments
+- **Total**: $0/month for small-scale deployments
 
 ---
 
 ## Prerequisites
 
 1. GitHub account
-2. Railway account (https://railway.app)
-3. Vercel account (https://vercel.com)
-4. Your code pushed to a GitHub repository
+2. [Supabase](https://supabase.com) project (free)
+3. [Railway](https://railway.app) account
+4. [Vercel](https://vercel.com) account
+5. Your code pushed to a GitHub repository
 
 ---
 
-## Part 1: Deploy Backend to Railway
+## Part 1: Set Up Supabase (Database + Auth)
 
-### Step 1: Prepare Your Repository
+Supabase is **required** — it handles authentication, module storage, and trainee progress.
 
-Make sure your code is pushed to GitHub:
+### Step 1: Create a Supabase Project
 
-```bash
-git add .
-git commit -m "Prepare for deployment"
-git push origin main
-```
+1. Go to [Supabase](https://supabase.com) and sign in
+2. Click **"New Project"**, choose a name and region
+3. Set a strong **database password** (this secures Supabase's internal PostgreSQL database — you won't use it in the app directly, but store it safely)
+4. Wait for the project to provision (~1 minute)
 
-### Step 2: Create Railway Project
+### Step 2: Run the Schema
+
+1. In your Supabase dashboard go to **SQL Editor**
+2. Click **"New query"**
+3. Paste the contents of `supabase/schema.sql` from this repository
+4. Click **"Run"** — this creates all required tables and policies
+
+### Step 3: Copy Your API Keys
+
+Go to **Settings → API**:
+
+| Setting | Where to find it |
+|---------|-----------------|
+| `SUPABASE_URL` | **Project URL** |
+| `SUPABASE_SERVICE_KEY` | **Project API keys → service_role (secret)** |
+
+> ⚠️ Use the **service_role** key (not the `anon` key) for the backend — it bypasses Row Level Security for server-side operations.
+
+---
+
+## Part 2: Deploy Backend to Railway
+
+### Step 1: Create Railway Project
 
 1. Go to [Railway](https://railway.app) and sign in with GitHub
-2. Click **"New Project"**
-3. Select **"Deploy from GitHub repo"**
-4. Choose your repository
-5. Select the `server` folder as the root directory
+2. Click **"New Project"** → **"Deploy from GitHub repo"**
+3. Choose your repository
+4. Set **Root Directory** to `server`
 
-### Step 3: Configure Environment Variables
+### Step 2: Configure Environment Variables
 
 In Railway, go to your project's **Variables** tab and add:
 
 ```
 PORT=3001
 NODE_ENV=production
-JWT_SECRET=<generate-a-strong-random-string>
-JWT_EXPIRES_IN=7d
 ADMIN_ID=admin
 ADMIN_PASSWORD=<choose-a-secure-password>
+ADMIN_EMAIL=admin@yourcompany.com
 CLIENT_URL=https://your-app.vercel.app
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=<your-service-role-key>
 ```
 
-**To generate a strong JWT secret:**
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-
-### Step 4: Configure Build Settings
+### Step 3: Configure Build Settings
 
 In Railway's **Settings** tab:
 
@@ -65,19 +83,22 @@ In Railway's **Settings** tab:
 - **Build Command**: `npm install`
 - **Start Command**: `node server.js`
 
-### Step 5: Deploy
+### Step 4: Deploy
 
 Railway will automatically deploy. Note your deployment URL (e.g., `https://your-app.up.railway.app`).
 
+On first start the server will automatically:
+- Create the default admin user
+- Seed Supabase with all training modules and learning paths from the JSON files
+
 ---
 
-## Part 2: Deploy Frontend to Vercel
+## Part 3: Deploy Frontend to Vercel
 
 ### Step 1: Import Project
 
 1. Go to [Vercel](https://vercel.com) and sign in with GitHub
-2. Click **"Add New Project"**
-3. Import your GitHub repository
+2. Click **"Add New Project"** and import your GitHub repository
 
 ### Step 2: Configure Project
 
@@ -88,13 +109,9 @@ Railway will automatically deploy. Note your deployment URL (e.g., `https://your
 
 ### Step 3: Add Environment Variables
 
-Add this environment variable:
-
 ```
 VITE_API_URL=https://your-railway-app.up.railway.app
 ```
-
-Replace with your actual Railway URL.
 
 ### Step 4: Deploy
 
@@ -102,7 +119,7 @@ Click **Deploy**. Vercel will build and deploy your frontend.
 
 ---
 
-## Part 3: Update CORS Settings
+## Part 4: Update CORS Settings
 
 After both are deployed, update Railway's `CLIENT_URL` environment variable with your Vercel URL:
 
@@ -114,92 +131,21 @@ Redeploy the Railway app for changes to take effect.
 
 ---
 
-## Part 4: Persistent Storage (Important!)
-
-By default, Railway uses ephemeral storage - files are lost on redeploys. For production, you have options:
-
-### Option A: Railway Volume (Recommended for simplicity)
-
-1. In Railway, go to your project
-2. Click **"+ New"** → **"Volume"**
-3. Set mount path to `/app/data` and `/app/progress`
-4. Redeploy
-
-### Option B: Migrate to a Database
-
-For more robust storage, migrate to a database like:
-- **Railway PostgreSQL** (add from Railway dashboard)
-- **MongoDB Atlas** (free tier available)
-- **Supabase** (free tier available)
-
----
-
-## Alternative Deployment Options
-
-### Render.com (Free Tier Available)
-
-1. Create account at [Render](https://render.com)
-2. New Web Service → Connect GitHub
-3. Configure:
-   - **Root Directory**: `server`
-   - **Build Command**: `npm install`
-   - **Start Command**: `node server.js`
-4. Add environment variables
-5. Deploy
-
-### Netlify (for Frontend)
-
-Similar to Vercel:
-1. Connect GitHub repository
-2. Set **Base directory**: `client`
-3. Set **Build command**: `npm run build`
-4. Set **Publish directory**: `client/dist`
-5. Add `VITE_API_URL` environment variable
-
-### Docker Deployment
-
-A `Dockerfile` is included for containerized deployment:
-
-```bash
-# Build
-docker build -t gg-ojt-server ./server
-
-# Run
-docker run -p 3001:3001 \
-  -e JWT_SECRET=your-secret \
-  -e ADMIN_PASSWORD=your-password \
-  -v $(pwd)/data:/app/data \
-  -v $(pwd)/progress:/app/progress \
-  gg-ojt-server
-```
-
----
-
-## Post-Deployment Checklist
-
-- [ ] Test login with admin credentials
-- [ ] Test trainee registration
-- [ ] Verify modules load correctly
-- [ ] Test progress saving
-- [ ] Check admin panel access
-- [ ] Test on mobile devices
-- [ ] Update any hardcoded localhost URLs
-
----
-
 ## Environment Variables Reference
 
 ### Server (Railway/Backend)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `PORT` | Yes | Server port (Railway sets automatically) |
+| `SUPABASE_URL` | **Yes** | Your Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | **Yes** | Supabase service role key (secret) |
+| `PORT` | Yes | Server port (Railway sets this automatically) |
 | `NODE_ENV` | Yes | Set to `production` |
-| `JWT_SECRET` | Yes | Secret key for JWT tokens |
-| `JWT_EXPIRES_IN` | No | Token expiration (default: 7d) |
-| `ADMIN_ID` | No | Default admin username (default: admin) |
-| `ADMIN_PASSWORD` | No | Default admin password (default: admin123) |
-| `CLIENT_URL` | Yes | Frontend URL for CORS |
+| `ADMIN_ID` | No | Default admin username (default: `admin`) |
+| `ADMIN_PASSWORD` | No | Default admin password (default: `admin123`) — **change this!** |
+| `ADMIN_EMAIL` | No | Admin email for Supabase Auth (default: `admin@gg-ojt.local`) |
+| `CLIENT_URL` | Yes | Frontend URL for CORS (comma-separated for multiple) |
+| `OPENAI_API_KEY` | No | For AI thumbnail generation in the admin panel |
 
 ### Client (Vercel/Frontend)
 
@@ -209,24 +155,100 @@ docker run -p 3001:3001 \
 
 ---
 
+## Local Development Setup
+
+### 1. Clone and install dependencies
+
+```bash
+git clone <your-repo>
+cd gg-ojt
+npm run install:all
+```
+
+### 2. Configure environment
+
+Copy the example and fill in your Supabase credentials:
+
+```bash
+cp .env.example .env
+# Edit .env with your SUPABASE_URL and SUPABASE_SERVICE_KEY
+```
+
+### 3. Start development servers
+
+```bash
+npm run dev
+```
+
+This starts both the backend (port 3001) and frontend (port 5173) concurrently.
+
+On first start, the server automatically seeds all modules and learning paths from the `data/` directory into Supabase.
+
+---
+
+## Adding New Content
+
+Modules and learning paths are defined as JSON files in:
+- `data/modules/` — training modules
+- `data/learning-paths/` — learning path groupings
+
+After editing or adding JSON files, the server will pick up the changes on next restart (new files are synced; existing ones are skipped to preserve any edits made via the Admin panel).
+
+To force-overwrite Supabase with the local JSON files:
+
+```bash
+# Via the Admin panel: Admin → Settings → "Force sync modules"
+# Or via the API (get a token by logging in first):
+#   1. POST /api/auth/login  { "employeeId": "admin", "password": "..." }
+#   2. Copy the "token" from the response
+curl -X POST http://localhost:3001/api/admin/modules/sync \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token-from-login>" \
+  -d '{"force": true}'
+```
+
+---
+
 ## Troubleshooting
+
+### "FATAL: Supabase credentials are required"
+- Ensure `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` are set in your `.env` file
+- Use the **service_role** key, not the `anon` key
+
+### "relation does not exist" errors
+- Run `supabase/schema.sql` in your Supabase SQL Editor
+- The schema must be run once before the server can start normally
 
 ### CORS Errors
 - Verify `CLIENT_URL` in Railway matches your Vercel URL exactly
-- Check for trailing slashes
+- No trailing slashes
 
-### Authentication Issues
-- Verify `JWT_SECRET` is set in Railway
-- Check browser console for specific error messages
-
-### Files Not Persisting
-- Set up Railway Volume for persistent storage
-- Or migrate to a database solution
+### Admin Login Fails
+- Check `ADMIN_ID`, `ADMIN_PASSWORD`, and `ADMIN_EMAIL` are set
+- The admin user is created automatically on first server start
+- If the Supabase Auth user is missing, restart the server — it will re-run `ensureAdminExists()`
 
 ### Build Failures
 - Check build logs in Railway/Vercel
 - Ensure all dependencies are in `package.json`
-- Verify Node.js version compatibility
+- Verify Node.js 18+ is being used
+
+---
+
+## Docker Deployment
+
+A `Dockerfile` is included in `server/`:
+
+```bash
+docker build -t gg-ojt-server ./server
+
+docker run -p 3001:3001 \
+  -e SUPABASE_URL=https://your-project.supabase.co \
+  -e SUPABASE_SERVICE_KEY=your-service-role-key \
+  -e ADMIN_PASSWORD=your-password \
+  -e CLIENT_URL=https://your-app.vercel.app \
+  gg-ojt-server
+```
 
 ---
 
@@ -234,19 +256,7 @@ docker run -p 3001:3001 \
 
 ### Railway
 - View logs in the **Deployments** tab
-- Set up alerts in **Settings** → **Observability**
+- Set up alerts in **Settings → Observability**
 
 ### Vercel
-- View function logs in **Logs** tab
-- Enable analytics in project settings
-
----
-
-## Scaling
-
-When you outgrow the free tier:
-
-1. **Railway Pro**: ~$5-20/month for more resources
-2. **Database**: Add PostgreSQL/MongoDB for better data handling
-3. **CDN**: Use Cloudflare for global caching
-4. **File Storage**: Use AWS S3 or Cloudflare R2 for videos/images
+- View function logs in the **Logs** tab
