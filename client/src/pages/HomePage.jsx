@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTraining } from '../context/TrainingContext';
 import { useAuth } from '../context/AuthContext';
-import { getModules, getModule } from '../services/api';
+import { getModules, getModule, getLearningPaths } from '../services/api';
 import ModuleCard from '../components/training/ModuleCard';
+import LearningPathCard from '../components/training/LearningPathCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Button from '../components/common/Button';
 
 function HomePage() {
   const [modules, setModules] = useState([]);
+  const [learningPaths, setLearningPaths] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resumeInfo, setResumeInfo] = useState(null);
   const { trainee, progress, currentPosition, isInitialized, loadProgress } = useTraining();
@@ -63,8 +65,12 @@ function HomePage() {
 
   const loadModules = async () => {
     try {
-      const response = await getModules();
-      setModules(response.data);
+      const [modulesRes, lpRes] = await Promise.all([
+        getModules(),
+        getLearningPaths().catch(() => ({ data: [] })),
+      ]);
+      setModules(modulesRes.data);
+      setLearningPaths(lpRes.data || []);
     } catch (error) {
       console.error('Failed to load modules:', error);
     } finally {
@@ -145,6 +151,26 @@ function HomePage() {
           }
         </p>
       </div>
+
+      {/* Learning Paths Section */}
+      {learningPaths.length > 0 && (
+        <>
+          <h2 style={{ marginBottom: '1.5rem' }}>Learning Paths</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+            Learning paths group related modules together. Complete all modules in a path and pass the final test to earn your certification.
+          </p>
+          <div className="module-grid">
+            {learningPaths.map((lp) => (
+              <LearningPathCard
+                key={lp.id}
+                learningPath={lp}
+                progress={progress}
+              />
+            ))}
+          </div>
+          <hr style={{ margin: '2rem 0', borderColor: 'var(--border-color)' }} />
+        </>
+      )}
 
       {/* Module Grid */}
       <h2 style={{ marginBottom: '1.5rem' }}>Training Modules</h2>

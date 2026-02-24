@@ -1,0 +1,51 @@
+{
+  "id": "02-electrical-systems",
+  "title": "Electrical Systems",
+  "description": "Master all aspects of electrical system installation for electric golf carts. Complete the electrical installation module and pass the comprehensive electrical systems test to earn your electrical certification.",
+  "estimatedTime": "2 hours",
+  "thumbnailUrl": "/images/modules/electrical.png",
+  "moduleIds": ["03-electrical"],
+  "knowledgeChecks": [
+    {
+      "id": "lp-check-1",
+      "question": "When installing a 48V battery system, what is the single most important safety rule?",
+      "type": "multiple-choice",
+      "options": [
+        "Work as fast as possible to minimize exposure",
+        "Always disconnect batteries before working on any electrical component",
+        "Use any available tools to save time",
+        "It is safe to skip polarity checks if you are experienced"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Disconnecting batteries before any electrical work is the fundamental rule. Even 48V systems can cause serious burns and fires from short circuits or reverse polarity."
+    },
+    {
+      "id": "lp-check-2",
+      "question": "What should you verify THREE times before making battery connections?",
+      "type": "multiple-choice",
+      "options": [
+        "The torque setting on the wrench",
+        "That your PPE is on correctly",
+        "Battery polarity and connection orientation",
+        "The battery charge level"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Polarity must be triple-checked before every battery connection. Reverse polarity WILL cause fire or explosion and destroy expensive components."
+    },
+    {
+      "id": "lp-check-3",
+      "question": "Which tools must be used when working on live electrical circuits?",
+      "type": "multiple-choice",
+      "options": [
+        "Standard hand tools are fine",
+        "Only power tools",
+        "Insulated tools rated for the voltage",
+        "Bare hands are acceptable for low-voltage work"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Insulated tools are required for all electrical work. Non-insulated tools can cause arcing, short circuits, and serious injury even at 48V."
+    }
+  ],
+  "isActive": true,
+  "sortOrder": 2
+}

@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import ProgressTracker from '../services/ProgressTracker.js';
 import ModuleLoader from '../services/ModuleLoader.js';
+import LearningPathLoader from '../services/LearningPathLoader.js';
 import StorageService from '../services/StorageService.js';
 import AuthService from '../services/AuthService.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -458,6 +459,96 @@ router.post('/modules/sync', async (req, res, next) => {
     });
   } catch (error) {
     next(new AppError(error.message, 500));
+  }
+});
+
+// =====================================================
+// LEARNING PATH MANAGEMENT ENDPOINTS
+// =====================================================
+
+// GET /api/admin/learning-paths - Get all learning paths
+router.get('/learning-paths', async (req, res, next) => {
+  try {
+    const learningPaths = await LearningPathLoader.getAllLearningPaths();
+    res.json(learningPaths);
+  } catch (error) {
+    next(new AppError(error.message, 500));
+  }
+});
+
+// GET /api/admin/learning-paths/:id - Get single learning path for editing
+router.get('/learning-paths/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const learningPath = await LearningPathLoader.getLearningPath(id);
+    if (!learningPath) {
+      throw new AppError('Learning path not found', 404);
+    }
+    res.json(learningPath);
+  } catch (error) {
+    next(new AppError(error.message, error.statusCode || 500));
+  }
+});
+
+// POST /api/admin/learning-paths - Create new learning path
+router.post('/learning-paths', async (req, res, next) => {
+  try {
+    const learningPathData = req.body;
+
+    if (!learningPathData.id || !learningPathData.title) {
+      throw new AppError('Learning path ID and title are required', 400);
+    }
+
+    const exists = await LearningPathLoader.learningPathExists(learningPathData.id);
+    if (exists) {
+      throw new AppError('Learning path with this ID already exists', 409);
+    }
+
+    await LearningPathLoader.saveLearningPath(learningPathData);
+    res.status(201).json({ success: true, learningPath: learningPathData });
+  } catch (error) {
+    next(new AppError(error.message, error.statusCode || 500));
+  }
+});
+
+// PUT /api/admin/learning-paths/:id - Update existing learning path
+router.put('/learning-paths/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const learningPathData = req.body;
+
+    if (!learningPathData.title) {
+      throw new AppError('Learning path title is required', 400);
+    }
+
+    learningPathData.id = id;
+
+    const exists = await LearningPathLoader.learningPathExists(id);
+    if (!exists) {
+      throw new AppError('Learning path not found', 404);
+    }
+
+    await LearningPathLoader.saveLearningPath(learningPathData);
+    res.json({ success: true, learningPath: learningPathData });
+  } catch (error) {
+    next(new AppError(error.message, error.statusCode || 500));
+  }
+});
+
+// DELETE /api/admin/learning-paths/:id - Delete learning path
+router.delete('/learning-paths/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const exists = await LearningPathLoader.learningPathExists(id);
+    if (!exists) {
+      throw new AppError('Learning path not found', 404);
+    }
+
+    await LearningPathLoader.deleteLearningPath(id);
+    res.json({ success: true, message: 'Learning path deleted successfully' });
+  } catch (error) {
+    next(new AppError(error.message, error.statusCode || 500));
   }
 });
 

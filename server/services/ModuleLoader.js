@@ -12,12 +12,7 @@ class ModuleLoader {
     this.cartsPath = join(config.dataPath, 'carts');
     this.cache = new Map();
     this.useSupabase = isSupabaseConfigured();
-    
-    if (this.useSupabase) {
-      console.log('🔗 ModuleLoader using Supabase database');
-    } else {
-      console.log('📁 ModuleLoader using file storage');
-    }
+    console.log('🔗 ModuleLoader using Supabase (default)');
   }
 
   // ============================================
@@ -265,13 +260,8 @@ class ModuleLoader {
   // SYNC & MIGRATION
   // ============================================
 
-  // Sync modules from files to Supabase (for initial migration)
+  // Sync modules from files to Supabase (for initial migration / seeding)
   async syncModulesToSupabase() {
-    if (!this.useSupabase) {
-      console.log('Supabase not configured, skipping sync');
-      return { synced: 0, failed: 0 };
-    }
-
     console.log('🔄 Syncing modules from files to Supabase...');
     const fileModules = await this.getAllModulesFromFiles();
     
@@ -302,11 +292,6 @@ class ModuleLoader {
 
   // Force sync (overwrites existing)
   async forceSyncModulesToSupabase() {
-    if (!this.useSupabase) {
-      console.log('Supabase not configured, skipping sync');
-      return { synced: 0, failed: 0 };
-    }
-
     console.log('🔄 Force syncing modules from files to Supabase...');
     const fileModules = await this.getAllModulesFromFiles();
     

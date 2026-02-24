@@ -1,30 +1,55 @@
 # Quick Start Guide
 
-Get the Golfin Garage training system running in 5 minutes.
+Get the Golfin Garage training system running in 10 minutes.
 
-## Prerequisites Check
+## Prerequisites
 
-Before starting, ensure you have:
-- ✅ Node.js 18+ installed (`node --version`)
-- ✅ npm 8+ installed (`npm --version`)
+- ✅ Node.js 18+ (`node --version`)
+- ✅ npm 8+ (`npm --version`)
+- ✅ A free [Supabase](https://supabase.com) project
 
-## Installation Steps
+---
 
-### 1. Navigate to project directory
+## Step 1: Set Up Supabase
+
+1. Create a free project at [https://supabase.com](https://supabase.com)
+   - Choose a name, region, and strong database password (for Supabase's own database — you won't need this in the app)
+2. Go to **SQL Editor → New query**
+3. Paste the contents of `supabase/schema.sql` and click **Run**
+   - You should see "Success. No rows returned" — that means all tables were created
+4. Go to **Settings → API** and copy:
+   - **Project URL** → `SUPABASE_URL`
+   - **service_role** key (secret) → `SUPABASE_SERVICE_KEY`
+
+---
+
+## Step 2: Configure Environment
+
 ```bash
-cd /path/to/gg-ojt
+cp .env.example .env
 ```
 
-### 2. Install all dependencies
-```bash
-npm install
-cd client && npm install && cd ..
-cd server && npm install && cd ..
+Open `.env` and fill in your Supabase credentials:
+
+```
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
 ```
 
-### 3. Start the application
+---
+
+## Step 3: Install Dependencies
+
 ```bash
-./start.sh
+npm run install:all
+```
+
+---
+
+## Step 4: Start the Application
+
+```bash
+npm run dev
 ```
 
 Or manually:
@@ -36,81 +61,68 @@ cd server && npm run dev
 cd client && npm run dev
 ```
 
-### 4. Access the application
-Open your browser to: **http://localhost:3000**
+On first start the server will:
+- ✅ Create the default admin user in Supabase Auth
+- ✅ Seed all training modules and learning paths into Supabase
 
-## First Login
+---
 
-1. Enter any employee ID (e.g., "EMP001")
-2. First time users will create a profile
-3. Start training!
+## Step 5: Access the Application
 
-## Test Credentials
+Open your browser to: **http://localhost:5173**
 
-Use these for testing:
-- Employee ID: `TEST001`
-- Name: `John Doe`
-- Cart Type: `Electric Standard` (auto-selected)
+### Default Admin Credentials
+- **Employee ID**: `admin`
+- **Password**: `admin123`
+
+> ⚠️ Change the admin password in your `.env` file before deploying to production!
+
+---
 
 ## Quick Tour
 
 ### Trainee Experience
-1. **Home Page** - See all training modules
-2. **Module Overview** - View module details and steps
-3. **Step Page** - Watch videos, read instructions, complete steps
-4. **Quiz** - Answer knowledge check questions
-5. **Progress Page** - Track your completion status
+1. **Home Page** — See learning paths and training modules
+2. **Learning Path** — View grouped modules and unlock the final test
+3. **Module Overview** — View module details and steps
+4. **Step Page** — Watch videos, read instructions, complete steps
+5. **Quiz** — Answer knowledge check questions
+6. **Progress Page** — Track your completion status
 
 ### Admin Access
-- Navigate to: http://localhost:3000/admin
-- View all trainee progress
-- Reset progress if needed
+- Navigate to: **http://localhost:5173/admin**
+- Or log in as admin and click the Admin button in the header
+- Manage trainees, modules, learning paths, and Q&A
+
+---
 
 ## Troubleshooting
 
+### Server fails with "FATAL: Supabase credentials are required"
+- Make sure `.env` exists with `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` set
+
+### "relation does not exist" errors
+- Run `supabase/schema.sql` in Supabase SQL Editor first
+
 ### Port Already in Use
 ```bash
-# Find and kill process on port 3001
-lsof -ti:3001 | xargs kill -9
-
-# Find and kill process on port 3000
-lsof -ti:3000 | xargs kill -9
-
-# Then restart
-./start.sh
+# Find the process using port 3001 (server) and stop it
+npx kill-port 3001
+# Find the process using port 5173 (frontend) and stop it
+npx kill-port 5173
 ```
-
-### "Module not found"
-- Ensure `data/modules/*.json` files exist
-- Check server console for JSON syntax errors
 
 ### Videos not playing
 - Placeholder videos use external URLs (requires internet)
-- For offline use, see docs/VIDEO_GUIDE.md
+- See `docs/VIDEO_GUIDE.md` for adding real training videos
+
+---
 
 ## Next Steps
 
-- 📖 Read [README.md](README.md) for full documentation
+- 📖 See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment
 - 🎬 See [docs/VIDEO_GUIDE.md](docs/VIDEO_GUIDE.md) to add real training videos
 - ✏️ See [docs/CONTENT_GUIDE.md](docs/CONTENT_GUIDE.md) to update training content
-- 📋 See [docs/SCHEMA.md](docs/SCHEMA.md) for data format reference
-
-## Getting Help
-
-- Server not starting? Check `server/server.js` logs
-- Frontend errors? Open browser DevTools (F12) and check console
-- JSON errors? Validate at https://jsonlint.com
-
-## Production Deployment
-
-When ready to deploy on workshop network:
-1. Set static IP on server machine
-2. Update `.env` with production values
-3. Build client: `cd client && npm run build`
-4. Use PM2 for process management: `pm2 start server/server.js`
-5. Access from any device: `http://<server-ip>:3001`
-
-See README.md for detailed deployment instructions.
 
 ---
 

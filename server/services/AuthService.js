@@ -3,12 +3,7 @@ import { supabase, isSupabaseConfigured } from './supabase.js';
 class AuthService {
   constructor() {
     this.useSupabase = isSupabaseConfigured();
-    if (this.useSupabase) {
-      console.log('🔗 AuthService using Supabase Auth');
-    } else {
-      console.error('❌ Supabase must be configured for authentication');
-      console.error('   Set SUPABASE_URL and SUPABASE_SERVICE_KEY in your .env file');
-    }
+    console.log('🔗 AuthService using Supabase Auth (default)');
   }
 
   async init() {
@@ -360,11 +355,6 @@ class AuthService {
   }
 
   async ensureAdminExists() {
-    if (!this.useSupabase) {
-      console.log('⚠️ Skipping admin creation - Supabase not configured');
-      return;
-    }
-    
     const adminId = process.env.ADMIN_ID || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
     const adminEmail = process.env.ADMIN_EMAIL || `${adminId}@gg-ojt.local`;
