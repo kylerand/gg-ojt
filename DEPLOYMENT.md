@@ -141,8 +141,8 @@ Redeploy the Railway app for changes to take effect.
 | `SUPABASE_SERVICE_KEY` | **Yes** | Supabase service role key (secret) |
 | `PORT` | Yes | Server port (Railway sets this automatically) |
 | `NODE_ENV` | Yes | Set to `production` |
-| `ADMIN_ID` | No | Default admin username (default: `admin`) |
-| `ADMIN_PASSWORD` | No | Default admin password (default: `admin123`) — **change this!** |
+| `ADMIN_ID` | No | Admin username (default: `admin`) |
+| `ADMIN_PASSWORD` | **Yes** | Admin password — **must be changed from `admin123` before deploying!** |
 | `ADMIN_EMAIL` | No | Admin email for Supabase Auth (default: `admin@gg-ojt.local`) |
 | `CLIENT_URL` | Yes | Frontend URL for CORS (comma-separated for multiple) |
 | `OPENAI_API_KEY` | No | For AI thumbnail generation in the admin panel |
