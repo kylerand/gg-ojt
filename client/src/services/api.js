@@ -60,6 +60,10 @@ export const getModules = () => api.get('/modules');
 export const getModule = (moduleId) => api.get(`/modules/${moduleId}`);
 export const getCartConfig = (cartType) => api.get(`/modules/cart/${cartType}`);
 
+// Learning Paths
+export const getLearningPaths = () => api.get('/learning-paths');
+export const getLearningPath = (pathId) => api.get(`/learning-paths/${pathId}`);
+
 // Progress
 export const getProgress = (traineeId) => api.get(`/progress/${traineeId}`);
 export const createProgress = (data) => api.post('/progress', data);
@@ -80,6 +84,13 @@ export const clearCache = () => api.post('/admin/cache/clear');
 export const createModule = (moduleData) => api.post('/admin/modules', moduleData);
 export const updateModule = (moduleId, moduleData) => api.put(`/admin/modules/${moduleId}`, moduleData);
 export const deleteModule = (moduleId) => api.delete(`/admin/modules/${moduleId}`);
+export const syncModules = (force = false) => api.post('/admin/modules/sync', { force });
+
+// Admin - Learning Paths
+export const createLearningPath = (pathData) => api.post('/admin/learning-paths', pathData);
+export const updateLearningPath = (pathId, pathData) => api.put(`/admin/learning-paths/${pathId}`, pathData);
+export const deleteLearningPath = (pathId) => api.delete(`/admin/learning-paths/${pathId}`);
+export const syncLearningPaths = (force = false) => api.post('/admin/learning-paths/sync', { force });
 
 // Admin - Trainees
 export const updateTrainee = (traineeId, data) => api.put(`/admin/trainees/${traineeId}`, data);

@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTraining } from '../context/TrainingContext';
 import { useAuth } from '../context/AuthContext';
-import { getModules, getModule } from '../services/api';
+import { getModules, getModule, getLearningPaths } from '../services/api';
+import LearningPathCard from '../components/training/LearningPathCard';
 import ModuleCard from '../components/training/ModuleCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Button from '../components/common/Button';
 
 function HomePage() {
   const [modules, setModules] = useState([]);
+  const [learningPaths, setLearningPaths] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resumeInfo, setResumeInfo] = useState(null);
   const { trainee, progress, currentPosition, isInitialized, loadProgress } = useTraining();
@@ -31,7 +33,7 @@ function HomePage() {
 
     // Only load modules once we have trainee data or auth is confirmed
     if (trainee || user) {
-      loadModules();
+      loadData();
     }
   }, [trainee, user, isAuthenticated, navigate]);
 
@@ -61,12 +63,16 @@ function HomePage() {
     loadResumeInfo();
   }, [currentPosition]);
 
-  const loadModules = async () => {
+  const loadData = async () => {
     try {
-      const response = await getModules();
-      setModules(response.data);
+      const [modulesRes, pathsRes] = await Promise.all([
+        getModules(),
+        getLearningPaths().catch(() => ({ data: [] })),
+      ]);
+      setModules(modulesRes.data);
+      setLearningPaths(pathsRes.data);
     } catch (error) {
-      console.error('Failed to load modules:', error);
+      console.error('Failed to load training data:', error);
     } finally {
       setLoading(false);
     }
@@ -79,6 +85,14 @@ function HomePage() {
   };
 
   if (loading) return <LoadingSpinner />;
+
+  // Compute set of module IDs that belong to at least one learning path
+  const pathModuleIds = new Set(
+    learningPaths.flatMap(p => p.modules?.map(m => m.id) ?? [])
+  );
+
+  // Modules not yet assigned to any path
+  const unassignedModules = modules.filter(m => !pathModuleIds.has(m.id));
 
   // Use step-based completion from backend if available
   const completionPercentage = progress?.completionPercentage ?? 
@@ -146,17 +160,39 @@ function HomePage() {
         </p>
       </div>
 
-      {/* Module Grid */}
-      <h2 style={{ marginBottom: '1.5rem' }}>Training Modules</h2>
-      <div className="module-grid">
-        {modules.map((module) => (
-          <ModuleCard 
-            key={module.id} 
-            module={module} 
-            progress={progress}
-          />
-        ))}
-      </div>
+      {/* Learning Paths */}
+      {learningPaths.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h2 style={{ marginBottom: '1.5rem' }}>Learning Paths</h2>
+          <div className="learning-paths-list">
+            {learningPaths.map(path => (
+              <LearningPathCard
+                key={path.id}
+                path={path}
+                progress={progress}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Unassigned / standalone modules */}
+      {unassignedModules.length > 0 && (
+        <div>
+          <h2 style={{ marginBottom: '1.5rem' }}>
+            {learningPaths.length > 0 ? 'Additional Modules' : 'Training Modules'}
+          </h2>
+          <div className="module-grid">
+            {unassignedModules.map((module) => (
+              <ModuleCard 
+                key={module.id} 
+                module={module} 
+                progress={progress}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

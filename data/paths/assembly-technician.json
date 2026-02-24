@@ -1,0 +1,16 @@
+{
+  "id": "assembly-technician",
+  "title": "Assembly Technician",
+  "description": "Complete certification path for golf cart assembly technicians. Master every stage of the build process — from frame construction through electrical systems, drivetrain, steering, and final quality inspection.",
+  "thumbnailUrl": "/images/paths/assembly-technician.png",
+  "moduleIds": [
+    "01-orientation",
+    "02-frame-chassis",
+    "03-electrical",
+    "04-drivetrain",
+    "05-steering-suspension",
+    "06-body-accessories",
+    "07-quality-inspection"
+  ],
+  "sortOrder": 1
+}

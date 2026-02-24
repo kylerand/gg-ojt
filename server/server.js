@@ -11,6 +11,7 @@ dotenv.config({ path: join(dirname(dirname(fileURLToPath(import.meta.url))), '.e
 
 // Import routes (these may depend on env vars)
 const { default: modulesRouter } = await import('./routes/modules.js');
+const { default: learningPathsRouter } = await import('./routes/learningPaths.js');
 const { default: progressRouter } = await import('./routes/progress.js');
 const { default: traineesRouter } = await import('./routes/trainees.js');
 const { default: adminRouter } = await import('./routes/admin.js');
@@ -23,6 +24,7 @@ const { logger } = await import('./middleware/logger.js');
 // Import services
 const { default: AuthService } = await import('./services/AuthService.js');
 const { default: ModuleLoader } = await import('./services/ModuleLoader.js');
+const { default: LearningPathLoader } = await import('./services/LearningPathLoader.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -52,6 +54,7 @@ app.use(logger);
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/modules', modulesRouter);
+app.use('/api/learning-paths', learningPathsRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/trainees', traineesRouter);
 app.use('/api/admin', adminRouter);
@@ -74,6 +77,8 @@ const startServer = async () => {
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
       console.log('📦 Checking module sync with Supabase...');
       await ModuleLoader.syncModulesToSupabase();
+      console.log('📦 Checking learning path sync with Supabase...');
+      await LearningPathLoader.syncPathsToSupabase();
     }
     
     app.listen(PORT, () => {
