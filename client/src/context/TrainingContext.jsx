@@ -86,6 +86,7 @@ export function TrainingProvider({ children }) {
 
   // Load trainee progress
   const loadProgress = async (traineeId) => {
+    if (!traineeId) return null;
     setLoading(true);
     setError(null);
     try {

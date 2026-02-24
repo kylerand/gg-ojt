@@ -3,7 +3,6 @@ import ModuleCard from './ModuleCard';
 
 function LearningPathCard({ path, progress }) {
   const [expanded, setExpanded] = useState(false);
-  const navigate = useNavigate();
 
   const completedCount = path.modules.filter(m => {
     const mp = progress?.moduleProgress?.[m.id];
