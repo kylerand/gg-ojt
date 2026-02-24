@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getLearningPath } from '../services/api';
 import { useTraining } from '../context/TrainingContext';
@@ -21,17 +21,7 @@ function LearningPathPage() {
     }
   }, [isAuthenticated, user, trainee, isInitialized, loadProgress]);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/');
-      return;
-    }
-    if (trainee || user) {
-      loadLearningPath();
-    }
-  }, [learningPathId, trainee, user, isAuthenticated, navigate]);
-
-  const loadLearningPath = async () => {
+  const loadLearningPath = useCallback(async () => {
     try {
       const response = await getLearningPath(learningPathId);
       setLearningPath(response.data);
@@ -40,7 +30,17 @@ function LearningPathPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [learningPathId]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/');
+      return;
+    }
+    if (trainee || user) {
+      loadLearningPath();
+    }
+  }, [learningPathId, trainee, user, isAuthenticated, navigate, loadLearningPath]);
 
   if (loading) return <LoadingSpinner />;
   if (!learningPath) return <div>Learning path not found</div>;

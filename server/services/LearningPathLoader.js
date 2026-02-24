@@ -56,7 +56,7 @@ class LearningPathLoader {
       }
       return await this.getAllLearningPathsFromFiles();
     } catch (error) {
-      throw new Error(`Failed to load learning paths: ${error.message}`);
+      throw new Error(`Failed to load learning paths (${this.useSupabase ? 'Supabase' : 'file storage'}): ${error.message}`);
     }
   }
 
