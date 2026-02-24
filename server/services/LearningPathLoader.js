@@ -8,6 +8,7 @@ class LearningPathLoader {
     this.learningPathsPath = join(config.dataPath, 'learning-paths');
     this.cache = new Map();
     this.useSupabase = isSupabaseConfigured();
+    console.log('🔗 LearningPathLoader using Supabase (default)');
   }
 
   // ============================================
@@ -229,6 +230,62 @@ class LearningPathLoader {
 
   clearCache() {
     this.cache.clear();
+  }
+
+  // ============================================
+  // SYNC & SEEDING
+  // ============================================
+
+  // Sync learning paths from files to Supabase (skips existing)
+  async syncLearningPathsToSupabase() {
+    console.log('🔄 Syncing learning paths from files to Supabase...');
+    const filePaths = await this.getAllLearningPathsFromFiles();
+
+    let synced = 0;
+    let failed = 0;
+
+    for (const lp of filePaths) {
+      try {
+        const existing = await this.getLearningPathFromSupabase(lp.id);
+        if (existing) {
+          console.log(`  ⏭️ Skipped (already exists): ${lp.id}`);
+          continue;
+        }
+
+        await this.saveLearningPathToSupabase(lp);
+        console.log(`  ✅ Synced: ${lp.id}`);
+        synced++;
+      } catch (error) {
+        console.error(`  ❌ Failed to sync ${lp.id}:`, error.message);
+        failed++;
+      }
+    }
+
+    console.log(`✅ Learning path sync complete. Synced: ${synced}, Failed: ${failed}`);
+    return { synced, failed };
+  }
+
+  // Force sync (overwrites existing)
+  async forceSyncLearningPathsToSupabase() {
+    console.log('🔄 Force syncing learning paths from files to Supabase...');
+    const filePaths = await this.getAllLearningPathsFromFiles();
+
+    let synced = 0;
+    let failed = 0;
+
+    for (const lp of filePaths) {
+      try {
+        await this.saveLearningPathToSupabase(lp);
+        console.log(`  ✅ Synced: ${lp.id}`);
+        synced++;
+      } catch (error) {
+        console.error(`  ❌ Failed to sync ${lp.id}:`, error.message);
+        failed++;
+      }
+    }
+
+    console.log(`✅ Force sync complete. Synced: ${synced}, Failed: ${failed}`);
+    return { synced, failed };
   }
 }
 

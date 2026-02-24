@@ -24,6 +24,7 @@ const { logger } = await import('./middleware/logger.js');
 // Import services
 const { default: AuthService } = await import('./services/AuthService.js');
 const { default: ModuleLoader } = await import('./services/ModuleLoader.js');
+const { default: LearningPathLoader } = await import('./services/LearningPathLoader.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -71,13 +72,12 @@ const startServer = async () => {
   try {
     // Ensure admin user exists
     await AuthService.ensureAdminExists();
-    
-    // Sync modules from files to Supabase on startup (if Supabase is configured)
-    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
-      console.log('📦 Checking module sync with Supabase...');
-      await ModuleLoader.syncModulesToSupabase();
-    }
-    
+
+    // Seed Supabase with content from JSON files (skips rows that already exist)
+    console.log('📦 Seeding Supabase with modules and learning paths...');
+    await ModuleLoader.syncModulesToSupabase();
+    await LearningPathLoader.syncLearningPathsToSupabase();
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(`📚 Training API available at http://localhost:${PORT}/api`);

@@ -8,11 +8,7 @@ class ProgressTracker {
   constructor() {
     this.progressPath = config.progressPath;
     this.useSupabase = isSupabaseConfigured();
-    if (this.useSupabase) {
-      console.log('🔗 ProgressTracker using Supabase');
-    } else {
-      console.log('📁 ProgressTracker using file storage');
-    }
+    console.log('🔗 ProgressTracker using Supabase (default)');
   }
 
   async init() {
