@@ -11,6 +11,7 @@ dotenv.config({ path: join(dirname(dirname(fileURLToPath(import.meta.url))), '.e
 
 // Import routes (these may depend on env vars)
 const { default: modulesRouter } = await import('./routes/modules.js');
+const { default: learningPathsRouter } = await import('./routes/learningPaths.js');
 const { default: progressRouter } = await import('./routes/progress.js');
 const { default: traineesRouter } = await import('./routes/trainees.js');
 const { default: adminRouter } = await import('./routes/admin.js');
@@ -52,6 +53,7 @@ app.use(logger);
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/modules', modulesRouter);
+app.use('/api/learning-paths', learningPathsRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/trainees', traineesRouter);
 app.use('/api/admin', adminRouter);

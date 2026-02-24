@@ -60,6 +60,10 @@ export const getModules = () => api.get('/modules');
 export const getModule = (moduleId) => api.get(`/modules/${moduleId}`);
 export const getCartConfig = (cartType) => api.get(`/modules/cart/${cartType}`);
 
+// Learning Paths
+export const getLearningPaths = () => api.get('/learning-paths');
+export const getLearningPath = (pathId) => api.get(`/learning-paths/${pathId}`);
+
 // Progress
 export const getProgress = (traineeId) => api.get(`/progress/${traineeId}`);
 export const createProgress = (data) => api.post('/progress', data);

@@ -5761,3 +5761,115 @@ body {
     max-height: 50vh;
   }
 }
+
+/* ============================================
+   LEARNING PATHS
+   ============================================ */
+
+.learning-paths-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.learning-path-card {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.learning-path-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.learning-path-card--completed {
+  border-color: var(--accent-color);
+}
+
+.learning-path-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.learning-path-header:hover {
+  background-color: var(--bg-color);
+}
+
+.learning-path-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.learning-path-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 0.2rem;
+}
+
+.learning-path-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.learning-path-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  background-color: #f0fff4;
+  border: 1px solid var(--accent-color);
+  border-radius: 9999px;
+  padding: 0.15rem 0.6rem;
+}
+
+.learning-path-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.learning-path-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-shrink: 0;
+}
+
+.learning-path-progress-wrap {
+  min-width: 140px;
+  text-align: right;
+}
+
+.learning-path-progress-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+}
+
+.learning-path-toggle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.learning-path-modules {
+  padding: 0 1.5rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}

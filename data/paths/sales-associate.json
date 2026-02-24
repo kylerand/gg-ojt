@@ -1,0 +1,11 @@
+{
+  "id": "sales-associate",
+  "title": "Sales Associate",
+  "description": "Foundational training path for sales associates. Covers essential safety orientation and in-depth product knowledge to help you confidently represent and sell our golf cart lineup.",
+  "thumbnailUrl": "/images/paths/sales-associate.png",
+  "moduleIds": [
+    "01-orientation",
+    "08-sales-product-knowledge"
+  ],
+  "sortOrder": 2
+}
